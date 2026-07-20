@@ -434,3 +434,11 @@ The public-link update is
 [Gatehold CI #29749328675](https://github.com/pakales/gatehold/actions/runs/29749328675)
 — passed the complete release contract and dependency audit on the exact
 executable source revision.
+
+**Final validated release package:**
+[`88bafa9e595e0f6d3e98c24fce235bafd85341b1`](https://github.com/pakales/gatehold/commit/88bafa9e595e0f6d3e98c24fce235bafd85341b1)
+
+**Matching final public CI run:**
+[Gatehold CI #29755587411](https://github.com/pakales/gatehold/actions/runs/29755587411)
+— passed after the title-safe media correction and release-evidence update were
+merged to `main`.

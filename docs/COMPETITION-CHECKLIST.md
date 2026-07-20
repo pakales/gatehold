@@ -37,6 +37,12 @@ The official rules and Devpost site override this checklist.
 - [x] Confirm the exact final public demo opens signed out in a private browser
       window.
 - [x] Confirm public repository opens signed out and includes MIT `LICENSE`.
+- [x] Confirm `main` requires a strict `verify` check through a pull request,
+      protects admins, resolves review conversations, and disallows force-push
+      and deletion.
+- [x] Confirm GitHub Actions is allowlisted, SHA pinning is required, and
+      security alerts, Dependabot updates, secret scanning, and push protection
+      are active.
 - [x] Confirm the replacement YouTube video is **Public**, not Unlisted or
       Private.
 - [x] Confirm the replacement local render is under 3:00 and audio is clear.
@@ -153,9 +159,10 @@ Replace every pending field immediately before submission:
 
 ```text
 Candidate state:
-Exact executable candidate committed and pushed; public CI is green. Release
-provenance update, merge, Sites deployment, YouTube publication, and Devpost
-submission remain in progress at the approved external-release boundary.
+Exact release package is merged to `main`; public CI is green. Production Sites
+v7 remains source-equivalent to the executable UI, the replacement YouTube
+video is Public, and GitHub release protections are active. Devpost submission
+remains in progress at the approved external-release boundary.
 
 Local release gate:
 PASS — 246 Python tests + 3 Node web tests, Ruff, Pyright, TypeScript, ESLint,
@@ -185,11 +192,11 @@ playback. Never substitute the superseded QBdzI0hqTQY or gS-LWm62Tr0 renders.
 Codex /feedback session:
 019f7221-2421-78e3-b12e-f6082da1ed87
 
-Final validated executable source:
-ba54c575ca510c2ec04bd372392c163fc10099b7
+Final validated release package:
+88bafa9e595e0f6d3e98c24fce235bafd85341b1
 
 Final GitHub Actions run:
-https://github.com/pakales/gatehold/actions/runs/29749328675 — PASS
+https://github.com/pakales/gatehold/actions/runs/29755587411 — PASS
 
 Final anonymous checks:
 PASS for the exact Sites candidate, public repository and replacement YouTube
@@ -200,15 +207,15 @@ PENDING — not submitted.
 
 Skipped:
 No local source, build, dependency, installer, daemon, model, UI, media, or
-privacy check was skipped. Only publication-dependent signed-out checks remain
+privacy check was skipped. Only the CAPTCHA-gated Devpost submission remains
 pending.
 
 Residual risk:
 Gatehold coordinates opt-in cooperative clients, not unmanaged processes.
 vinext still emits an upstream Node punycode deprecation warning while the
-build succeeds. The final media provenance merge, GitHub hardening, and Devpost
-submission remain external release actions in progress. The older public
-videos must not be used in the final Gatehold submission.
+build succeeds. Devpost submission remains the only external release action in
+progress. The older public videos must not be used in the final Gatehold
+submission.
 ```
 
 ## Stop boundaries

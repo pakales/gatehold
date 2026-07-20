@@ -29,3 +29,6 @@ no generated claims or data are introduced.
 The opening uses `media/cards/title-safe.svg`, a deterministic 1920×1080 frame
 around the approved brand asset. Its slower bounded push-in keeps the wordmark
 and tagline inside the conservative 10% title-safe area throughout S01.
+
+`media/cards/devpost-cover.jpg` is the same approved title-safe frame exported
+at Devpost's recommended 3:2 gallery ratio, with no new claims or content.
