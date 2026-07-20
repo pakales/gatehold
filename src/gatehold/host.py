@@ -9,6 +9,10 @@ import psutil
 
 from .models import HostSnapshot
 
+DEFAULT_CPU_SAMPLE_INTERVAL_SECONDS = 0.1
+MIN_CPU_SAMPLE_INTERVAL_SECONDS = 0.05
+MAX_CPU_SAMPLE_INTERVAL_SECONDS = 1.0
+
 
 class HostProbe(Protocol):
     def sample(
@@ -21,6 +25,23 @@ class HostProbe(Protocol):
 
 
 class PsutilHostProbe:
+    def __init__(
+        self,
+        *,
+        sample_interval_seconds: float = DEFAULT_CPU_SAMPLE_INTERVAL_SECONDS,
+    ) -> None:
+        if not (
+            MIN_CPU_SAMPLE_INTERVAL_SECONDS
+            <= sample_interval_seconds
+            <= MAX_CPU_SAMPLE_INTERVAL_SECONDS
+        ):
+            raise ValueError(
+                "sample_interval_seconds must be between "
+                f"{MIN_CPU_SAMPLE_INTERVAL_SECONDS} and "
+                f"{MAX_CPU_SAMPLE_INTERVAL_SECONDS}"
+            )
+        self.sample_interval_seconds = sample_interval_seconds
+
     def sample(
         self,
         *,
@@ -28,7 +49,9 @@ class PsutilHostProbe:
         memory_limit_percent: float,
         now: datetime,
     ) -> HostSnapshot:
-        cpu = float(psutil.cpu_percent(interval=None))
+        # A non-blocking first psutil sample is relative to process-local
+        # history and commonly returns a meaningless 0.0 in short-lived CLIs.
+        cpu = float(psutil.cpu_percent(interval=self.sample_interval_seconds))
         memory = float(psutil.virtual_memory().percent)
         return HostSnapshot(
             sampled_at=now.astimezone(UTC),

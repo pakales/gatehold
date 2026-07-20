@@ -79,10 +79,10 @@ uv run pyright
 npm run typecheck
 npm run lint
 npm test
-npm run build
 ```
 
-Use `npm run verify` for the full local gate.
+`npm test` creates a clean production bundle before exercising the rendered
+web contracts. Use `npm run verify` for the full local gate.
 
 For UI work, also verify desktop and mobile layouts, keyboard use, visible
 focus, reduced motion, and no browser console errors.

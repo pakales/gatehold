@@ -13,6 +13,14 @@ LOOPBACK_HOST = "127.0.0.1"
 DEFAULT_DAEMON_PORT = 47_820
 
 
+def _normalized_state_path(path: Path) -> Path:
+    """Resolve parent aliases without dereferencing the final state entry."""
+
+    expanded = path.expanduser()
+    absolute = Path(os.path.abspath(os.fspath(expanded)))
+    return absolute.parent.resolve(strict=False) / absolute.name
+
+
 class GateholdConfig(DomainModel):
     state_dir: Path
     host: str = LOOPBACK_HOST
@@ -70,7 +78,9 @@ class GateholdConfig(DomainModel):
             if value.strip()
         )
         return cls(
-            state_dir=selected_state.expanduser().resolve(),
+            # Preserve the final path entry so Store can reject a state-dir
+            # symlink with lstat instead of silently adopting its target.
+            state_dir=_normalized_state_path(selected_state),
             host=os.getenv("GATEHOLD_HOST", LOOPBACK_HOST),
             daemon_port=int(os.getenv("GATEHOLD_PORT", str(DEFAULT_DAEMON_PORT))),
             max_heavy_slots=int(os.getenv("GATEHOLD_MAX_HEAVY", "2")),

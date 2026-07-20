@@ -29,8 +29,10 @@ test("server-renders the Gatehold clearance deck", async () => {
   );
   assert.match(normalized, /GATEHOLD/);
   assert.match(normalized, /Every agent needs clearance\./);
-  assert.match(normalized, /One machine\. Many agents\./);
-  assert.match(normalized, /Zero collisions\./);
+  assert.match(
+    normalized,
+    /One machine\. Many agents\. One clearance layer\./,
+  );
   assert.match(normalized, /Host Core/);
   assert.match(normalized, /Replay agent lanes/);
   assert.match(normalized, /Replay event rail/);
@@ -78,6 +80,34 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
   assert.match(dashboard, /\/v1\/snapshot/);
   assert.match(dashboard, /\/v1\/events/);
   assert.match(dashboard, /credentials:\s*"omit"/);
+  assert.match(
+    dashboard,
+    /response\.status === 401 \|\| response\.status === 403/,
+  );
+  assert.match(
+    dashboard,
+    /health\.status === 401 \|\| health\.status === 403/,
+  );
+  assert.equal((dashboard.match(/connectLocal\(\)/g) ?? []).length, 1);
+  assert.equal((dashboard.match(/mode: "no-cors"/g) ?? []).length, 1);
+  assert.match(
+    dashboard,
+    /health = await fetch\(`\$\{DAEMON_ORIGIN\}\/healthz`, \{\s*cache: "no-store",\s*headers: \{ Accept: "application\/json" \},\s*credentials: "omit",\s*signal: controller\.signal,\s*\}\);/,
+  );
+  assert.match(
+    dashboard,
+    /catch \{\s*try \{\s*await fetch\(`\$\{DAEMON_ORIGIN\}\/healthz`, \{\s*method: "GET",\s*mode: "no-cors",\s*cache: "no-store",\s*credentials: "omit",\s*signal: controller\.signal,\s*\}\);[\s\S]*?setLiveState\("blocked"\);[\s\S]*?\}\s*return;/,
+  );
+  assert.match(
+    dashboard,
+    /if \(!health\.ok\) \{\s*setLocalSnapshot\(null\);\s*setLiveState\("offline"\);\s*return;\s*\}/,
+  );
+  assert.doesNotMatch(dashboard, /\bbody\s*:/);
+  assert.match(dashboard, /LOCAL ACCESS BLOCKED · REPLAY SCENARIO/);
+  assert.match(
+    dashboard,
+    /Grant browser local access and allowlist this exact origin\./,
+  );
   assert.match(dashboard, /request\.semantic_hold/);
   assert.match(dashboard, /lease\.released/);
   assert.match(dashboard, /addEventListener\(eventKind/);

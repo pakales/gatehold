@@ -428,7 +428,7 @@ const liveCopy: Record<LiveState, { label: string; description: string }> = {
   live: { label: "Live", description: "Read-only daemon snapshot" },
   blocked: {
     label: "Blocked",
-    description: "Allowlist this dashboard origin",
+    description: "Allow local access · allowlist this origin",
   },
   offline: {
     label: "Offline",
@@ -450,8 +450,8 @@ const boundaryCopy: Record<LiveState, { title: string; detail: string }> = {
     detail: "Only host metrics and counts are live; A–D lanes and events remain replay.",
   },
   blocked: {
-    title: "LOCAL ORIGIN BLOCKED · REPLAY SCENARIO",
-    detail: "Allowlist this dashboard origin to read host metrics.",
+    title: "LOCAL ACCESS BLOCKED · REPLAY SCENARIO",
+    detail: "Grant browser local access and allowlist this exact origin.",
   },
   offline: {
     title: "LOCAL HOST OFFLINE · REPLAY SCENARIO",
@@ -467,7 +467,7 @@ const footerCopy: Record<LiveState, string> = {
   live:
     "LIVE HOST METRICS · A–D lanes and events remain bounded replay data.",
   blocked:
-    "LOCAL ORIGIN BLOCKED · A–D replay remains active; allowlist this origin to read host metrics.",
+    "LOCAL ACCESS BLOCKED · A–D replay remains active; grant browser local access and allowlist this exact origin.",
   offline:
     "LOCAL HOST OFFLINE · A–D replay remains active with bounded demo data.",
 };
@@ -594,17 +594,48 @@ export function GateholdDashboard() {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 1800);
     try {
-      const health = await fetch(`${DAEMON_ORIGIN}/healthz`, {
-        cache: "no-store",
-        headers: { Accept: "application/json" },
-        credentials: "omit",
-        signal: controller.signal,
-      });
-      if (!health.ok) throw new Error(`Health returned ${health.status}`);
-      await refreshLocalSnapshot();
-    } catch {
-      setLocalSnapshot(null);
-      setLiveState("offline");
+      let health: Response;
+      try {
+        health = await fetch(`${DAEMON_ORIGIN}/healthz`, {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+          credentials: "omit",
+          signal: controller.signal,
+        });
+      } catch {
+        try {
+          await fetch(`${DAEMON_ORIGIN}/healthz`, {
+            method: "GET",
+            mode: "no-cors",
+            cache: "no-store",
+            credentials: "omit",
+            signal: controller.signal,
+          });
+          // Opaque success proves only that loopback replied, never health or identity.
+          setLocalSnapshot(null);
+          setLiveState("blocked");
+        } catch {
+          setLocalSnapshot(null);
+          setLiveState("offline");
+        }
+        return;
+      }
+      if (health.status === 401 || health.status === 403) {
+        setLocalSnapshot(null);
+        setLiveState("blocked");
+        return;
+      }
+      if (!health.ok) {
+        setLocalSnapshot(null);
+        setLiveState("offline");
+        return;
+      }
+      try {
+        await refreshLocalSnapshot();
+      } catch {
+        setLocalSnapshot(null);
+        setLiveState("offline");
+      }
     } finally {
       window.clearTimeout(timeout);
     }
@@ -736,7 +767,7 @@ export function GateholdDashboard() {
           </p>
           <h1 id="control-deck">
             One machine. Many agents.
-            <span> Zero collisions.</span>
+            <span> One clearance layer.</span>
           </h1>
         </div>
         <p className="intro-note">

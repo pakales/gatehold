@@ -19,8 +19,11 @@ uv run pyright
 npm run typecheck
 npm run lint
 npm test
-npm run build
 ```
+
+`npm test` is self-contained: it creates a clean production bundle before
+running the rendered web contracts. This keeps the same command reproducible in
+a fresh clone with no pre-existing `dist/`.
 
 Do not state that the gate passed unless it was run against the exact source
 state being handed off.
@@ -31,9 +34,9 @@ Run the network-backed advisory checks separately:
 npm run audit:deps
 ```
 
-This audits production npm dependencies and the locked Python environment. The
-local `gatehold` package itself is expected to be skipped because it is not
-published on PyPI.
+This audits the complete npm graph, including build tooling, and the locked
+Python environment. The local `gatehold` package itself is expected to be
+skipped because it is not published on PyPI.
 
 ## Focused commands
 

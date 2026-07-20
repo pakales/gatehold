@@ -16,6 +16,7 @@ from gatehold.admission import (
     LeaseNotActiveError,
     RequestNotQueuedError,
 )
+from gatehold.config import GateholdConfig
 from gatehold.conflicts import canonical_workstream
 from gatehold.host import StaticHostProbe
 from gatehold.models import (
@@ -31,7 +32,12 @@ from gatehold.models import (
     WorkloadClass,
 )
 from gatehold.privacy import scope_digest
-from gatehold.store import GateholdStore, secure_state_permissions
+from gatehold.store import (
+    STATE_MARKER_CONTENT,
+    STATE_MARKER_NAME,
+    GateholdStore,
+    secure_state_permissions,
+)
 
 
 class CountingClearComparator:
@@ -87,6 +93,9 @@ def test_store_initializes_wal_and_private_permissions(
         "database": "0o600",
         "profiles": "0o700",
     }
+    marker = config.state_dir / STATE_MARKER_NAME
+    assert marker.read_bytes() == STATE_MARKER_CONTENT
+    assert stat.S_IMODE(marker.stat().st_mode) == 0o600
 
     with store.transaction():
         for suffix in ("-wal", "-shm"):
@@ -100,21 +109,80 @@ def test_store_rejects_symlink_state_directory(
 ) -> None:
     target = tmp_path / "real-state"
     target.mkdir()
+    original_mode = stat.S_IMODE(target.stat().st_mode)
     symlink = tmp_path / "state-link"
     symlink.symlink_to(target, target_is_directory=True)
     config = config_factory(state_dir=symlink)
 
     with pytest.raises(RuntimeError, match="real directory"):
         GateholdStore(config).initialize()
+    assert stat.S_IMODE(target.stat().st_mode) == original_mode
+    assert not (target / STATE_MARKER_NAME).exists()
+
+
+def test_environment_config_preserves_final_symlink_for_store_rejection(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "real-state"
+    target.mkdir(mode=0o755)
+    original_mode = stat.S_IMODE(target.stat().st_mode)
+    symlink = tmp_path / "state-link"
+    symlink.symlink_to(target, target_is_directory=True)
+
+    config = GateholdConfig.from_environment(state_dir=symlink)
+
+    assert config.state_dir == symlink
+    assert config.state_dir.is_symlink()
+    with pytest.raises(RuntimeError, match="real directory"):
+        GateholdStore(config).initialize()
+    assert stat.S_IMODE(target.stat().st_mode) == original_mode
+    assert not (target / STATE_MARKER_NAME).exists()
+
+
+def test_store_adopts_an_existing_empty_private_directory(
+    tmp_path: Path,
+    config_factory: ConfigFactory,
+) -> None:
+    state_dir = tmp_path / "fresh-private-state"
+    state_dir.mkdir(mode=0o700)
+    state_dir.chmod(0o700)
+    config = config_factory(state_dir=state_dir)
+
+    GateholdStore(config).initialize()
+
+    assert (state_dir / STATE_MARKER_NAME).read_bytes() == STATE_MARKER_CONTENT
+    assert config.database_path.is_file()
+    assert stat.S_IMODE(state_dir.stat().st_mode) == 0o700
+
+
+def test_store_refuses_to_chmod_or_adopt_unrecognized_existing_directory(
+    tmp_path: Path,
+    config_factory: ConfigFactory,
+) -> None:
+    state_dir = tmp_path / "shared-state"
+    state_dir.mkdir(mode=0o755)
+    state_dir.chmod(0o755)
+    sentinel = state_dir / "keep.txt"
+    sentinel.write_text("shared", encoding="utf-8")
+    config = config_factory(state_dir=state_dir)
+
+    with pytest.raises(RuntimeError, match="refusing to adopt"):
+        GateholdStore(config).initialize()
+
+    assert stat.S_IMODE(state_dir.stat().st_mode) == 0o755
+    assert sentinel.read_text(encoding="utf-8") == "shared"
+    assert not (state_dir / STATE_MARKER_NAME).exists()
+    assert not config.database_path.exists()
 
 
 def test_store_rejects_symlink_database(tmp_path: Path, config_factory: ConfigFactory) -> None:
     state_dir = tmp_path / "state"
-    state_dir.mkdir()
+    config = config_factory(state_dir=state_dir)
+    GateholdStore(config).initialize()
+    config.database_path.unlink()
     target = tmp_path / "outside.sqlite3"
     target.touch()
     (state_dir / "gatehold.sqlite3").symlink_to(target)
-    config = config_factory(state_dir=state_dir)
 
     with pytest.raises(RuntimeError, match="regular file"):
         GateholdStore(config).initialize()

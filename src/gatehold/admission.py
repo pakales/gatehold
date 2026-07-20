@@ -847,7 +847,11 @@ class GateholdService:
         request: ClaimRequest,
         active: tuple[StoredLease, ...],
     ) -> SemanticAssessment:
-        active_set_sha256 = sha256_text("\n".join(sorted(lease.lease_id for lease in active)))
+        active_ids = "\n".join(sorted(lease.lease_id for lease in active))
+        summary_sha256 = sha256_text(request.semantic_summary or "")
+        active_set_sha256 = sha256_text(
+            f"semantic-cache-v2\0{summary_sha256}\0{active_ids}"
+        )
         with self.store.reader() as connection:
             cached = self.store.get_semantic_cache(
                 connection,

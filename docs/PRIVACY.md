@@ -88,6 +88,8 @@ bounds them.
 - Never use a `NEXT_PUBLIC_` prefix.
 - Never paste the key into a browser field, screenshot, demo, issue, fixture,
   receipt, log, or commit.
+- The local installer never loads `.env.local` into its wrapper, and the
+  persistent daemon explicitly drops `OPENAI_API_KEY` from its environment.
 - Never include `.env.local` in a support bundle.
 - Rotate the key if exposure is suspected.
 

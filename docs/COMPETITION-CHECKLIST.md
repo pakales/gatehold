@@ -32,8 +32,8 @@ The official rules and Devpost site override this checklist.
 - [x] Record the public YouTube URL.
 - [x] Record the real Codex `/feedback` session ID.
 - [x] Link the dated competition-period commits.
-- [x] Record the final validated source revision.
-- [x] Confirm no submission placeholder remains in public or submitted copy.
+- [ ] Record the final validated source revision.
+- [ ] Confirm no submission placeholder remains in public or submitted copy.
 - [ ] Confirm public demo opens signed out in a private browser window.
 - [ ] Confirm public repository opens signed out and includes MIT `LICENSE`.
 - [x] Confirm YouTube visibility is **Public**, not Unlisted or Private.

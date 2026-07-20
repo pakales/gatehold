@@ -496,6 +496,84 @@ def test_model_clear_cannot_override_deterministic_host_capacity(
     assert ReasonCode.HOST_CPU_PRESSURE in second.reasons
 
 
+def test_semantic_cache_is_bound_to_summary_digest_without_persisting_summary(
+    config_factory: ConfigFactory,
+) -> None:
+    summaries: list[str | None] = []
+
+    class SummaryRecordingComparator:
+        def compare(
+            self,
+            candidate: SemanticCandidate,
+            active: SemanticCandidate,
+            *,
+            active_lease_id: str,
+        ) -> SemanticAssessment:
+            del active
+            summaries.append(candidate.summary)
+            return SemanticAssessment(
+                verdict=SemanticVerdict.CLEAR,
+                model="fake-summary-cache",
+                compared_lease_id=active_lease_id,
+                confidence=SemanticConfidence.HIGH,
+                reason=SemanticReason.NONE,
+            )
+
+    config = config_factory(cpu_limit_percent=50)
+    service = GateholdService(
+        config,
+        host_probe=StaticHostProbe(cpu_percent=99),
+        semantic_comparator=SummaryRecordingComparator(),
+    )
+    active = service.claim(_service_request("a", "auth", "src/auth"))
+    assert active.lease is not None
+    first_summary = "semantic-summary-alpha-unique"
+    second_summary = "semantic-summary-beta-unique"
+    queued_request = ClaimRequest(
+        owner_id="b",
+        workstream="billing",
+        scopes=("src/billing",),
+        workload=WorkloadClass.HEAVY,
+        semantic_summary=first_summary,
+    )
+
+    queued = service.claim(queued_request)
+    assert queued.decision is ClearanceDecision.QUEUED
+    assert queued.queue_token is not None
+    changed_request = queued_request.model_copy(
+        update={"semantic_summary": second_summary}
+    )
+    resumed = service.claim(
+        changed_request,
+        request_id=queued.request_id,
+        queue_token=queued.queue_token,
+    )
+    cached_resume = service.claim(
+        changed_request,
+        request_id=queued.request_id,
+        queue_token=queued.queue_token,
+    )
+
+    assert resumed.decision is ClearanceDecision.QUEUED
+    assert cached_resume.decision is ClearanceDecision.QUEUED
+    assert summaries == [first_summary, second_summary]
+    with service.store.reader() as connection:
+        row = connection.execute(
+            """
+            SELECT active_set_sha256
+            FROM semantic_cache
+            WHERE request_id = ?
+            """,
+            (queued.request_id,),
+        ).fetchone()
+    assert row is not None
+    assert len(str(row["active_set_sha256"])) == 64
+    for path in config.state_dir.glob("gatehold.sqlite3*"):
+        persisted = path.read_bytes()
+        assert first_summary.encode() not in persisted
+        assert second_summary.encode() not in persisted
+
+
 def test_stale_model_hold_cannot_hold_after_compared_lease_is_released(
     config_factory: ConfigFactory,
 ) -> None:

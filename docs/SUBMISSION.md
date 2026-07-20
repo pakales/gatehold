@@ -1,7 +1,9 @@
 # Gatehold — Devpost Submission Copy
 
-This file is the English source of truth for the OpenAI Build Week entry. Every
-public link and evidence identifier below is the verified submission value.
+This file is the English source of truth for the OpenAI Build Week entry. The
+public links and Codex evidence identifier below are verified. The final
+validation revision remains an explicit marker until the last public commit
+passes CI.
 
 ## Submission fields
 
@@ -31,14 +33,29 @@ MIT
 
 ## Short description
 
-Gatehold is a local admission-control plane for parallel AI coding agents. It
-prevents cooperative agents from silently taking the same product work,
-assigns isolated runtime lanes, and queues heavy builds or tests when
-the workstation is under pressure. It also verifies that a governed task's
-owned process group and runtime surfaces are clean before releasing authority.
-Deterministic local policy is the only clearance authority. GPT-5.6 can detect
-a semantic overlap and add a hold, but it can never grant clearance or override
-a local conflict.
+Gatehold gives parallel coding agents a preflight check and a clean landing on
+one developer workstation. Before work starts, it prevents cooperative agents
+from silently taking the same product outcome, assigns exclusive runtime
+lanes, and queues heavy builds or tests when the host is under pressure. Before
+authority is reused, it verifies that the governed task's owned process group
+and runtime surfaces are clean. Deterministic local policy is the only
+clearance authority. GPT-5.6 can detect a semantic overlap and add a hold, but
+it can never grant clearance or override a local conflict.
+
+## Fast judge path
+
+Open <https://gatehold-buildweek.e-vigelis.chatgpt.site> with no account, key,
+or local installation. In approximately 90 seconds, the bounded replay shows:
+
+1. one agent receiving a TTL-bound workstream lease;
+2. a differently worded overlapping claim being held before it edits;
+3. a heavy task waiting for deterministic FIFO host capacity;
+4. exclusive port, browser-profile, and exact-simulator ownership; and
+5. verified owned cleanup completing before the next task becomes eligible.
+
+The experience is persistently labeled **REPLAY** because a public site cannot
+truthfully inspect a judge's workstation. A five-minute source path exercises
+the real local daemon and CLI.
 
 ## Inspiration
 
@@ -47,11 +64,17 @@ still a shared physical system. Worktrees isolate files; they do not establish
 who owns a product flow, who has the only simulator or browser profile, or
 whether three agents should start builds at the same time.
 
-The failure is rarely dramatic. It is two reasonable agents duplicating work,
-reusing one port, restarting one server, leaving a browser profile or dev
-server behind, or making the laptop unusable. We wanted a clear full-flight
-rule for cooperative agents: claim the work, wait for the machine, run in an
-owned lane, and restore that lane before it clears.
+The intended user is a solo developer or small team running several coding
+agents on one workstation. Today that operator becomes a manual scheduler:
+remember which agent owns each outcome, watch CPU and memory pressure, reserve
+ports and simulators, and clean up after sessions finish.
+
+The failure is rarely dramatic enough to explain itself. It is two reasonable
+agents duplicating work, reusing one port, restarting one server, leaving a
+browser profile or descendant dev server behind, or making the laptop
+unresponsive. We wanted one clear full-flight rule for cooperative agents:
+claim the work, wait for the machine, run in an owned lane, and restore that
+lane before it clears.
 
 ## What it does
 
@@ -84,6 +107,25 @@ The public judge experience is a clearly labeled synthetic replay. The local
 mode reads the loopback daemon and current Gatehold state on the same machine.
 Gatehold never pretends a public website can inspect a visitor's workstation.
 
+## Potential impact
+
+Parallel coding makes starting work cheap, but it also multiplies pressure on a
+shared workstation. The operator pays for collisions as duplicated effort,
+confusing server state, failed builds, unavailable simulators, and time spent
+identifying which process is safe to stop.
+
+Gatehold addresses that problem at two moments where an explanation alone is
+too late: **before work starts** and **before a finished lane is reused**. A
+hold or wait is accompanied by a bounded reason and recovery condition. A
+clean finish is based on verified ownership, not a process name or optimistic
+assumption.
+
+The current product deliberately targets cooperative local clients, where its
+authority and privacy boundaries are testable. The reusable Codex skill
+demonstrates how an agent runtime can adopt the contract today. The same lease
+and adapter boundaries could support other local agent clients without turning
+Gatehold into a remote surveillance service or expanding GPT-5.6's authority.
+
 ## How we built it
 
 - Python 3.12, FastAPI, Pydantic, SQLite, psutil, and `uv` for the local control
@@ -111,15 +153,21 @@ Gatehold never pretends a public website can inspect a visitor's workstation.
   and live-local dashboard.
 - A reusable Codex skill that makes claim-before-edit, governed heavy work,
   heartbeat, and release part of the agent workflow.
+- A release gate that collects 155 Python contract cases and three Node web
+  contract tests, then runs Ruff, Pyright, TypeScript, ESLint, privacy/link
+  checks, and a production build.
 
 ## How Codex and GPT-5.6 contributed
 
-Codex was our primary engineering collaborator. It translated the product
-invariants into a clean repository, decomposed the daemon, lease model, API,
-CLI, tests, UI, replay, threat model, and submission package, then validated
-the implementation as an integrated release candidate. Codex accelerated
-parallel inspection and implementation while the human retained the key
-product and risk decisions.
+Codex was our primary engineering collaborator and later became a controlled
+client of the product it helped build. It translated the product invariants
+into a clean competition repository, decomposed the daemon, lease model, API,
+CLI, tests, UI, replay, threat model, and submission package, and used the
+release gate to expose integration failures that did not appear in isolated
+checks. Codex accelerated parallel implementation, adversarial review,
+documentation synchronization, and public-release verification while the human
+selected the product direction and retained the key product and risk
+decisions.
 
 Those decisions include:
 
@@ -182,7 +230,8 @@ shutdown.
 - A GPT-5.6 integration that can only make admission more conservative.
 - A public no-secret replay plus a separate live-local control desk.
 - A Codex skill that operationalizes the safety contract for real coding work.
-- Strict Python/TypeScript checks, contract tests, privacy documentation, and a
+- A current inventory of 155 Python contract cases plus three Node web contract
+  tests, strict Python/TypeScript checks, privacy documentation, and a
   reproducible judge route.
 
 ## What we learned
@@ -204,11 +253,19 @@ Gatehold does not claim to be the first or only tool for parallel agents.
 Worktree managers, multi-agent workspaces, OS process governors, and command
 queues already solve valuable parts of the problem.
 
-Gatehold focuses on their intersection: product-work ownership,
+| Adjacent category | Existing value | Gatehold's additional contract |
+| --- | --- | --- |
+| Git worktrees | Isolate files and branches | Coordinate ownership of the product outcome across worktrees |
+| Multi-agent workspaces | Separate sessions and delegate tasks | Require one shared deterministic preflight before local work begins |
+| Process governors and queues | Limit CPU or concurrent jobs | Combine capacity with workstream and named-runtime admission |
+| Cleanup utilities | Find stale processes or files | Act only on durable, verified ownership and quarantine uncertainty |
+
+Gatehold focuses on the intersection: product-work ownership,
 machine-capacity admission, named runtime lanes, and fail-closed owned cleanup
 across a cooperative agent's lifecycle. Its defining technical choices are
 that GPT-5.6 may add a semantic hold while only deterministic local policy can
-grant clearance, and that only verified cleanup can free authority.
+grant clearance, and that only verified cleanup can free authority. The claim
+is the coherence of that lifecycle, not that each individual primitive is new.
 
 ## Pre-existing-work disclosure
 
@@ -314,7 +371,7 @@ Gatehold — Every Agent Needs Clearance | OpenAI Build Week
 
 **Description**
 
-> One machine. Many agents. Zero collisions.
+> One machine. Many agents. One clearance layer.
 >
 > Gatehold is local clearance control for parallel AI coding agents. Before a
 > controlled task edits or starts heavy work, deterministic policy checks
@@ -352,6 +409,9 @@ Gatehold — Every Agent Needs Clearance | OpenAI Build Week
 [premium control deck](https://github.com/pakales/gatehold/commit/da8e5a0895789b7b50c54e7f90be3ba8417cee25),
 and
 [judge evidence and demo package](https://github.com/pakales/gatehold/commit/945175d99dec4d49193e237d841911fd79777406).
+The public-link update is
+[`ae268a5dfcc7240d59a55ffcad9d91553311ff04`](https://github.com/pakales/gatehold/commit/ae268a5dfcc7240d59a55ffcad9d91553311ff04).
 
 **Final validation revision:**
-[`945175d99dec4d49193e237d841911fd79777406`](https://github.com/pakales/gatehold/commit/945175d99dec4d49193e237d841911fd79777406)
+`PENDING_FINAL_GREEN_SHA` — replace only after the final public commit passes
+the complete CI gate.

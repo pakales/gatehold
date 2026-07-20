@@ -48,6 +48,12 @@ deterministic overlap-hold receipt, and a sanitized snapshot. No API key is
 required. Use the dashboard Replay for the full A–D semantic/capacity/release
 story, including Scene D's verified clean finish.
 
+For ongoing macOS use, `./scripts/install-local.sh` also installs the local
+wrapper, starts the loopback LaunchAgent, and links the bundled Codex skill. It
+does not load `.env.local`; the persistent daemon explicitly drops
+`OPENAI_API_KEY`. The five-minute judge path above stays repository-local and
+does not require that installation.
+
 ### Exercise the managed clean-finish path
 
 ```bash
@@ -145,7 +151,10 @@ No browser origin, including loopback, is trusted implicitly. Local loopback
 origins may use HTTP; non-loopback origins must use HTTPS. Public HTTP,
 wildcards, and credentialed CORS are not allowed. If the browser cannot reach
 the daemon, the UI should show a truthful disconnected state; switch back to
-Replay to continue testing.
+Replay to continue testing. Chrome 142 and later may first ask for
+[Local Network Access permission](https://developer.chrome.com/blog/local-network-access)
+when the public site checks `127.0.0.1`; grant it only for this intentional
+Live-local path.
 
 ### Run the complete verification gate
 
@@ -222,7 +231,10 @@ the dashboard's exact `--dashboard-origin`.
 
 **Live local is disconnected**
 The public hosted site cannot inspect a remote local machine. Run the dashboard
-locally on the same workstation, or use Replay.
+locally on the same workstation, or use Replay. If Chrome shows a Local Network
+Access prompt, grant it only when you intentionally started the loopback daemon;
+an origin-denied response still requires restarting the daemon with that exact
+`--dashboard-origin`.
 
 **GPT-5.6 status says disabled/fallback**
 That is expected without a usable server-side key or when the provider is

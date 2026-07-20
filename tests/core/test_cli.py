@@ -39,9 +39,11 @@ class _ActivationPipe:
 
 
 @pytest.fixture(autouse=True)
-def _stub_cli_runtime_lifecycle(  # pyright: ignore[reportUnusedFunction]
+def _stub_cli_process_registration(  # pyright: ignore[reportUnusedFunction]
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Keep fake PIDs out of psutil while exercising real durable cleanup."""
+
     def register(
         self: GateholdService,
         *,
@@ -51,24 +53,7 @@ def _stub_cli_runtime_lifecycle(  # pyright: ignore[reportUnusedFunction]
     ) -> None:
         del self, lease_id, pid, run_token
 
-    def cleanup(
-        self: GateholdService,
-        *,
-        lease_id: str,
-        reason: str,
-        child_exit_code: int | None = None,
-    ) -> RuntimeCleanupResult:
-        del self, reason, child_exit_code
-        return RuntimeCleanupResult(
-            lease_id=lease_id,
-            complete=True,
-            process=ProcessCleanupResult(complete=True),
-            simulator_shutdown=False,
-            resources_finalized=False,
-        )
-
     monkeypatch.setattr(GateholdService, "register_managed_process", register)
-    monkeypatch.setattr(GateholdService, "cleanup_runtime", cleanup)
 
 
 def test_init_creates_private_state_without_printing_token(
@@ -252,6 +237,12 @@ def test_managed_run_uses_literal_argv_shell_false_and_scrubs_secrets(
     )
     snapshot = service.snapshot()
     assert snapshot.active_leases == ()
+    with service.store.transaction() as connection:
+        lease = service.store.get_lease(connection, result_path.stem)
+        runtime = service.store.get_runtime_ownership(connection, result_path.stem)
+    assert lease is not None and lease.state.value == "released"
+    assert runtime is not None and runtime.state == "cleaned"
+    assert runtime.resources_finalized is True
     receipt_json = "".join(receipt.model_dump_json() for receipt in snapshot.recent_receipts)
     assert "fake-tool" in receipt_json
     assert "/usr/local/bin" not in receipt_json
@@ -422,6 +413,20 @@ def test_ctrl_c_terminates_managed_child_and_returns_130(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    def static_claim_service(
+        config: GateholdConfig,
+        *,
+        no_semantic: bool,
+    ) -> GateholdService:
+        del no_semantic
+        return GateholdService(
+            config,
+            host_probe=StaticHostProbe(),
+            semantic_comparator=None,
+        )
+
+    monkeypatch.setattr("gatehold.cli._claim_service", static_claim_service)
+
     class InterruptedProcess:
         def __init__(self) -> None:
             self.pid = 91_004
@@ -603,6 +608,16 @@ def test_ctrl_c_while_waiting_cancels_queue(
     )
     assert active.lease is not None
     monkeypatch.setenv("GATEHOLD_MAX_HEAVY", "1")
+
+    def static_claim_service(
+        candidate_config: GateholdConfig,
+        *,
+        no_semantic: bool,
+    ) -> GateholdService:
+        del candidate_config, no_semantic
+        return service
+
+    monkeypatch.setattr("gatehold.cli._claim_service", static_claim_service)
 
     def interrupt(_seconds: float) -> None:
         raise KeyboardInterrupt

@@ -2,6 +2,8 @@
 
 **Local air-traffic control for coding agents.**
 
+[![Gatehold CI](https://github.com/pakales/gatehold/actions/workflows/ci.yml/badge.svg)](https://github.com/pakales/gatehold/actions/workflows/ci.yml)
+
 Gatehold stops two cooperative AI coding agents from silently taking the same
 workstream and keeps heavy builds, tests, browser sessions, and simulator lanes
 from overwhelming one developer workstation.
@@ -15,16 +17,32 @@ A deterministic local policy grants or withholds clearance. GPT-5.6 can spot a
 semantic overlap that exact rules missed and raise an additional hold, but it
 can never grant clearance or override a deterministic conflict.
 
+Gatehold is for solo developers and small teams running several cooperative
+coding agents on one workstation. It turns coordination that normally lives in
+the operator's memory into an explicit, inspectable task lifecycle:
+
+```text
+CLAIM -> CLEAR / HOLD / WAIT -> OWNED RUN -> VERIFIED CLEANUP -> RELEASE
+```
+
 > Gatehold is a cooperative workstation governor. It is not a security
 > sandbox, a kernel scheduler, a Mac cleaner, or a guarantee against unmanaged
 > processes.
 
 ## Why it matters
 
-Parallel agents are fast until they collide: two sessions edit the same flow,
-reuse one port, claim one simulator, or start expensive builds at once. Git
-worktrees isolate files, but they do not answer who owns the product work or
-whether the host has capacity.
+Parallel agents are fast until the workstation becomes their hidden shared
+dependency. Two reasonable sessions can edit the same product flow from
+different worktrees, reuse one port or browser profile, claim one simulator,
+or start expensive builds at the same time. When an agent exits, its direct
+command may be gone while a descendant server or runtime surface remains.
+
+Git worktrees isolate files, but they do not answer four operational questions:
+
+1. Has another agent already claimed the same product outcome?
+2. Can the host safely start this heavy task now?
+3. Who owns each exclusive runtime surface?
+4. Is the owned lane actually clean before its authority is reused?
 
 Gatehold adds a small admission-control layer:
 
@@ -40,6 +58,20 @@ Gatehold adds a small admission-control layer:
 
 Gatehold waits. It never kills unrelated user processes to make room or guesses
 that a process belongs to it.
+
+## Evidence at a glance
+
+| Judge question | Inspectable evidence |
+| --- | --- |
+| Is this more than a UI concept? | A Python daemon, transactional SQLite admission engine, CLI, process supervisor, React control desk, and reusable Codex skill are all in this repository. |
+| Is the core behavior exercised? | The current release gate collects 155 Python contract cases and three Node web contract tests, then runs strict Python/TypeScript checks and a production build. |
+| Does cleanup work on a real machine? | A recorded disposable macOS Simulator smoke reached `boot_intent -> owned -> cleaned`, confirmed shutdown, and finished with zero allocations and zero booted simulators. |
+| Can a judge see the product quickly? | The public, no-account [90-second replay](https://gatehold-buildweek.e-vigelis.chatgpt.site) demonstrates admission, semantic hold, FIFO capacity waiting, runtime ownership, and verified clean finish. |
+| Can GPT-5.6 take control? | No. Its strict output can only add a semantic hold; deterministic conflict, capacity, ownership, and release decisions stay outside the model schema. |
+
+The exact commands, expected results, platform limits, and recorded simulator
+evidence are in [Testing](docs/TESTING.md) and
+[Judge Quickstart](docs/JUDGE-QUICKSTART.md).
 
 ## Judge quickstart
 
@@ -73,6 +105,23 @@ uv run gatehold init
 
 No OpenAI API key is required for deterministic admission, status, receipts, or
 the replay demo.
+
+For an ongoing macOS setup, one command installs the local `gatehold` wrapper,
+starts its loopback LaunchAgent, and links the bundled Codex skill without
+overwriting an existing skill:
+
+```bash
+./scripts/install-local.sh
+gatehold status
+```
+
+The persistent daemon never loads `.env.local` and explicitly drops
+`OPENAI_API_KEY`. Remove the wrapper, LaunchAgent, and exact skill link while
+keeping local receipts with:
+
+```bash
+./scripts/uninstall-local.sh
+```
 
 ### Run
 
@@ -114,7 +163,10 @@ Every browser origin, including localhost, is denied unless it was explicitly
 passed with `--dashboard-origin` or configured as the same exact value in
 `GATEHOLD_DASHBOARD_ORIGINS`. Local loopback origins may use HTTP; any
 non-loopback origin must use HTTPS. Public HTTP and wildcard origins are never
-allowed.
+allowed. Chrome 142 and later may also show its
+[Local Network Access permission](https://developer.chrome.com/blog/local-network-access)
+when a public page intentionally checks `127.0.0.1`; grant it only when using
+**Live local**.
 
 ### Run with an owned clean finish
 
@@ -182,9 +234,9 @@ local result.
 npm run verify
 ```
 
-The full gate runs Python tests, Ruff, Pyright, TypeScript type checking, ESLint,
-web tests, and a production web build. See [Testing](docs/TESTING.md) for
-focused checks and manual scenarios.
+The full gate runs Python tests, Ruff, Pyright, TypeScript type checking,
+ESLint, a clean production web build, and rendered web contract tests. See
+[Testing](docs/TESTING.md) for focused checks and manual scenarios.
 
 ## Replay is not live state
 
@@ -204,11 +256,15 @@ looks like workstation telemetry must remain visibly labeled as replay.
 ## Codex and GPT-5.6 have different jobs
 
 **Codex is the builder and controlled client.** Codex was used to turn the
-product constraints into the clean repository, implement and test the daemon,
-CLI, dashboard, replay, and documentation, and package a reusable Gatehold
-skill. In normal use, the skill requires Codex to claim a workstream before an
-edit, run heavy commands through Gatehold, heartbeat long work, and release its
-leases only after the owned runtime reaches a verified clean finish.
+product constraints into testable invariants, build the clean competition
+repository, implement and review the daemon, CLI, supervisor, dashboard,
+replay, tests, and documentation, and package a reusable Gatehold skill. Codex
+accelerated parallel engineering and verification; the human selected the
+product direction and retained the decisions that define authority, privacy,
+safe cleanup, and honest public claims. In normal use, the skill requires Codex
+to claim a workstream before an edit, run heavy commands through Gatehold,
+heartbeat long work, and release its leases only after the owned runtime
+reaches a verified clean finish.
 
 **GPT-5.6 is a bounded runtime adviser.** It evaluates whether two differently
 worded work claims may still overlap. Its output can only add a hold. It has no
@@ -226,12 +282,20 @@ Gatehold does not claim to be the first or only parallel-agent controller.
 Existing products already provide valuable worktree isolation, agent
 workspaces, process throttling, or command queues.
 
+| Adjacent category | What it already solves | What Gatehold adds |
+| --- | --- | --- |
+| Git worktrees | File and branch isolation | Cross-worktree ownership of the product outcome |
+| Multi-agent workspaces | Separate sessions and task delegation | One deterministic preflight authority for shared local work |
+| Process throttlers and command queues | CPU limits or concurrent-job counts | Workstream conflicts, FIFO host admission, and named runtime leases in one decision |
+| Cleanup utilities | Discovery of stale processes or files | Provenance-bound cleanup that refuses to guess ownership |
+
 Gatehold's focus is the boundary between those categories: **product-work
 ownership plus host-capacity admission plus named runtime lanes plus
 fail-closed owned cleanup**, enforced across the full governed task lifecycle.
-Its differentiator is the explicit authority split: deterministic rules can
-grant clearance; GPT-5.6 may only make the system more conservative; cleanup
-frees authority only after provenance-backed verification.
+The differentiator is not a claim that each primitive is new. It is the
+end-to-end contract: deterministic rules alone can grant clearance; GPT-5.6 may
+only make the result more conservative; and authority is not reusable until
+provenance-backed cleanup succeeds.
 
 See [Product Contract](docs/PRODUCT-CONTRACT.md) for the precise claims and
 non-claims.
@@ -305,9 +369,11 @@ documentation, and Codex skill.
 | 2026-07-20 EEST | Built the replay/live-local product experience and contest test route | `app/`, `fixtures/demo/`, `tests/web/`, `docs/JUDGE-QUICKSTART.md` |
 | 2026-07-20 EEST | Packaged the Codex operating workflow and English submission materials | `skills/gatehold/`, `docs/DEMO-SCRIPT.md`, `docs/SUBMISSION.md` |
 
-Before final submission, the entrant must add dated commit links and the real
-Codex `/feedback` session ID to the Devpost entry. Placeholders are tracked in
-[Competition Checklist](docs/COMPETITION-CHECKLIST.md); they are not evidence.
+The primary Codex `/feedback` session ID is
+`019f7221-2421-78e3-b12e-f6082da1ed87`. Dated public commit links are recorded
+in [Devpost Submission Copy](docs/SUBMISSION.md). The final validation revision
+must be recorded only after the last documentation change and a green public
+CI run; until then, `PENDING_FINAL_GREEN_SHA` is a marker rather than evidence.
 
 ## Repository map
 

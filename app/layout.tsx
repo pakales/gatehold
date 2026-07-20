@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s — GATEHOLD",
   },
   description:
-    "One machine. Many agents. Zero collisions. Gatehold coordinates local coding agents with workstream and host-capacity clearance.",
+    "One machine. Many agents. One clearance layer. Gatehold coordinates local coding agents with workstream and host-capacity clearance.",
   applicationName: "GATEHOLD",
   icons: {
     icon: "/favicon.svg",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     type: "website",
     title: "GATEHOLD — Every agent needs clearance",
     description:
-      "One machine. Many agents. Zero collisions. Local admission control for parallel coding agents.",
+      "One machine. Many agents. One clearance layer. Local admission control for parallel coding agents.",
     images: [
       {
         url: "/gatehold-og.png",

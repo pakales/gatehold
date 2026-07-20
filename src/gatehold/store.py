@@ -27,6 +27,8 @@ from .models import (
 )
 
 SCHEMA_VERSION = 3
+STATE_MARKER_NAME = ".gatehold-state"
+STATE_MARKER_CONTENT = b"gatehold-state-v1\n"
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,11 +102,21 @@ class StoredRuntimeOwnership:
     cleanup_attempts: int
 
 
+def _owned_by_current_user(info: os.stat_result) -> bool:
+    get_effective_user_id = getattr(os, "geteuid", None)
+    return get_effective_user_id is None or info.st_uid == get_effective_user_id()
+
+
 def _private_directory(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True, mode=0o700)
-    info = path.lstat()
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        path.mkdir(parents=True, exist_ok=False, mode=0o700)
+        info = path.lstat()
     if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
         raise RuntimeError(f"state path must be a real directory: {path}")
+    if not _owned_by_current_user(info):
+        raise RuntimeError(f"state path must be owned by the current user: {path}")
     path.chmod(0o700)
 
 
@@ -112,7 +124,138 @@ def _private_file(path: Path) -> None:
     info = path.lstat()
     if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode):
         raise RuntimeError(f"state file must be a regular file: {path}")
+    if not _owned_by_current_user(info):
+        raise RuntimeError(f"state file must be owned by the current user: {path}")
     path.chmod(0o600)
+
+
+def _write_state_marker(path: Path) -> None:
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    flags |= getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags, 0o600)
+    try:
+        os.fchmod(descriptor, 0o600)
+        written = os.write(descriptor, STATE_MARKER_CONTENT)
+        if written != len(STATE_MARKER_CONTENT):
+            raise RuntimeError(f"could not write complete state marker: {path}")
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _valid_state_marker(path: Path) -> bool:
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except FileNotFoundError:
+        return False
+    except OSError as error:
+        raise RuntimeError(f"state marker must be a regular private file: {path}") from error
+    try:
+        info = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or not _owned_by_current_user(info)
+            or stat.S_IMODE(info.st_mode) != 0o600
+        ):
+            raise RuntimeError(f"state marker must be a regular private file: {path}")
+        content = os.read(descriptor, len(STATE_MARKER_CONTENT) + 1)
+    finally:
+        os.close(descriptor)
+    if content != STATE_MARKER_CONTENT:
+        raise RuntimeError(f"state marker is not recognized: {path}")
+    return True
+
+
+def _legacy_gatehold_database(path: Path) -> bool:
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return False
+    if stat.S_ISLNK(info.st_mode) or not stat.S_ISREG(info.st_mode):
+        raise RuntimeError(f"state file must be a regular file: {path}")
+    if not _owned_by_current_user(info) or stat.S_IMODE(info.st_mode) != 0o600:
+        return False
+
+    required_columns = {
+        "leases": {
+            "lease_id",
+            "request_id",
+            "owner_id",
+            "workstream",
+            "scope_sha256",
+            "workload",
+            "heartbeat_token_sha256",
+            "state",
+            "resources_json",
+        },
+        "runtime_ownership": {
+            "lease_id",
+            "provenance",
+            "browser_profile_owned",
+            "simulator_owned",
+            "state",
+            "resources_finalized",
+        },
+    }
+    uri = f"{path.absolute().as_uri()}?mode=ro"
+    try:
+        connection = sqlite3.connect(uri, uri=True)
+        try:
+            tables = {
+                str(row[0])
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                ).fetchall()
+            }
+            if not required_columns.keys() <= tables:
+                return False
+            for table, expected_columns in required_columns.items():
+                columns = {
+                    str(row[1])
+                    for row in connection.execute(f"PRAGMA table_info({table})").fetchall()
+                }
+                if not expected_columns <= columns:
+                    return False
+        finally:
+            connection.close()
+    except sqlite3.Error:
+        return False
+    return True
+
+
+def _prepare_state_directory(path: Path, database_path: Path) -> None:
+    created = False
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        path.mkdir(parents=True, exist_ok=False, mode=0o700)
+        path.chmod(0o700)
+        info = path.lstat()
+        created = True
+
+    if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
+        raise RuntimeError(f"state path must be a real directory: {path}")
+    if not _owned_by_current_user(info):
+        raise RuntimeError(f"state path must be owned by the current user: {path}")
+
+    mode = stat.S_IMODE(info.st_mode)
+    if mode != 0o700:
+        raise RuntimeError(
+            f"refusing to adopt existing state directory without mode 0o700: {path}"
+        )
+
+    marker_path = path / STATE_MARKER_NAME
+    if _valid_state_marker(marker_path):
+        return
+    empty_private_directory = not any(path.iterdir())
+    if (
+        not created
+        and not empty_private_directory
+        and not _legacy_gatehold_database(database_path)
+    ):
+        raise RuntimeError(f"refusing to adopt unrecognized state directory: {path}")
+    _write_state_marker(marker_path)
 
 
 def _utc_from_timestamp(value: float) -> datetime:
@@ -126,10 +269,13 @@ class GateholdStore:
         self.config = config
 
     def initialize(self) -> None:
-        _private_directory(self.config.state_dir)
+        _prepare_state_directory(
+            self.config.state_dir,
+            self.config.database_path,
+        )
         _private_directory(self.config.browser_profiles_dir)
         _private_directory(self.config.runtime_results_dir)
-        if self.config.database_path.exists():
+        if os.path.lexists(self.config.database_path):
             _private_file(self.config.database_path)
         connection = self._connect()
         try:

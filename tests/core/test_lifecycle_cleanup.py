@@ -26,7 +26,7 @@ from gatehold.models import (
 )
 from gatehold.privacy import secret_digest
 from gatehold.resources import PROFILE_MARKER_NAME
-from gatehold.store import GateholdStore, StoredRuntimeOwnership
+from gatehold.store import STATE_MARKER_NAME, GateholdStore, StoredRuntimeOwnership
 
 
 def _request(
@@ -525,6 +525,7 @@ def test_v2_runtime_schema_migrates_legacy_simulator_ownership_fail_closed(
         )
     finally:
         connection.close()
+    config.database_path.chmod(0o600)
 
     store = GateholdStore(config)
     store.initialize()
@@ -552,3 +553,4 @@ def test_v2_runtime_schema_migrates_legacy_simulator_ownership_fail_closed(
     assert migrated.simulator_owned_at is None
     assert schema_version is not None
     assert schema_version["value"] == "3"
+    assert (config.state_dir / STATE_MARKER_NAME).is_file()

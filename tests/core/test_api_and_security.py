@@ -10,7 +10,7 @@ from typing import Protocol, Self, cast
 import pytest
 from fastapi.testclient import TestClient
 from helpers import ConfigFactory
-from httpx import Response
+from httpx2 import Response
 
 from gatehold.admission import GateholdService
 from gatehold.api import (
