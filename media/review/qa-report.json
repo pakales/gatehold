@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "durationSeconds": 171.021333,
+  "resolution": "1920x1080",
+  "video": "h264/yuv420p/30/1",
+  "audio": "aac/48000Hz/2ch",
+  "integratedLufs": -15.88,
+  "truePeakDbtp": -4.45,
+  "decodeErrors": 0,
+  "captionsExact": true,
+  "aiVoiceDisclosure": "Narration is AI-generated using OpenAI text-to-speech.",
+  "contactSheet": "media/review/contact-sheet.png",
+  "manualVisualReviewRequired": true
+}

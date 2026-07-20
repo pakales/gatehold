@@ -1,0 +1,35 @@
+1
+00:00:00,000 --> 00:00:13,000
+Parallel coding agents are fast. But a workstation still shares product work, ports, browsers, simulators, and finite compute. Two agents can be individually correct and still collide.
+
+2
+00:00:13,000 --> 00:00:31,000
+Gatehold is local clearance control for coding agents. Before controlled work starts, it asks two questions: does this agent own the workstream, and can this machine carry the task right now?
+
+3
+00:00:31,000 --> 00:00:53,000
+Agent zero seven receives a time-bound heavy lease for authentication work, with an isolated runtime lane and named port. Ownership, capacity, heartbeat, and expiry are explicit before the task begins.
+
+4
+00:00:53,000 --> 00:01:16,000
+Another agent describes overlapping session-renewal work with different words. G P T five point six may add a conservative semantic hold, but it has deliberately limited authority. It cannot grant clearance, override deterministic policy, reorder the queue, or run a command.
+
+5
+00:01:16,000 --> 00:01:36,000
+Clearance is also machine-aware. When the host is under pressure, independent heavy work waits in a deterministic first-in, first-out queue. Abandoned requests expire, so one vanished agent cannot block the machine forever.
+
+6
+00:01:36,000 --> 00:02:00,000
+Finishing also means restoring the workstation. Gatehold cleans the proven process group, dev server, browser profile, and port opened by a managed task. Exit, interruption, lost heartbeat, and daemon recovery share one idempotent path. Gatehold shuts down only the exact simulator it booted and confirmed; human simulators stay untouched.
+
+7
+00:02:00,000 --> 00:02:18,000
+Codex built and tested this repository, and it is also a controlled client. The Gatehold skill requires claim before edit, governed execution for heavy work, heartbeat during long tasks, and release on completion. There is no bypass-on-error path.
+
+8
+00:02:18,000 --> 00:02:36,000
+The public dashboard is a labeled synthetic replay. Live local mode reads only the loopback daemon. Deterministic policy needs no API key, and optional model calls use bounded, sanitized metadata with storage disabled.
+
+9
+00:02:36,000 --> 00:02:51,000
+Gatehold gives cooperative agents a simple rule: one owner, one isolated runtime lane, owned cleanup at the finish, and no heavy start without clearance. One machine. Many agents. Zero collisions.

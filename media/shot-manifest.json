@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "title": "Gatehold — Every agent needs clearance",
+  "targetDurationSeconds": 171,
+  "voice": {
+    "provider": "OpenAI",
+    "model": "gpt-4o-mini-tts-2025-12-15",
+    "voice": "marin",
+    "disclosure": "Narration is AI-generated using OpenAI text-to-speech."
+  },
+  "shots": [
+    {
+      "id": "S01",
+      "title": "The collision",
+      "durationSeconds": 13,
+      "visual": "public/gatehold-og.png",
+      "motion": "push-in",
+      "narration": "Parallel coding agents are fast. But a workstation still shares product work, ports, browsers, simulators, and finite compute. Two agents can be individually correct and still collide."
+    },
+    {
+      "id": "S02",
+      "title": "Two-key clearance",
+      "durationSeconds": 18,
+      "visual": "media/stills/scene-a-clean-admit.png",
+      "motion": "drift-right",
+      "narration": "Gatehold is local clearance control for coding agents. Before controlled work starts, it asks two questions: does this agent own the workstream, and can this machine carry the task right now?"
+    },
+    {
+      "id": "S03",
+      "title": "One owner",
+      "durationSeconds": 22,
+      "visual": "media/stills/scene-a-clean-admit.png",
+      "motion": "push-in",
+      "narration": "Agent zero seven receives a time-bound heavy lease for authentication work, with an isolated runtime lane and named port. Ownership, capacity, heartbeat, and expiry are explicit before the task begins."
+    },
+    {
+      "id": "S04",
+      "title": "Semantic hold",
+      "durationSeconds": 23,
+      "visual": "media/stills/scene-b-semantic-hold.png",
+      "motion": "drift-left",
+      "narration": "Another agent describes overlapping session-renewal work with different words. G P T five point six may add a conservative semantic hold, but it has deliberately limited authority. It cannot grant clearance, override deterministic policy, reorder the queue, or run a command."
+    },
+    {
+      "id": "S05",
+      "title": "Machine-aware waiting",
+      "durationSeconds": 20,
+      "visual": "media/stills/scene-c-capacity-hold.png",
+      "motion": "push-in",
+      "narration": "Clearance is also machine-aware. When the host is under pressure, independent heavy work waits in a deterministic first-in, first-out queue. Abandoned requests expire, so one vanished agent cannot block the machine forever."
+    },
+    {
+      "id": "S06",
+      "title": "Owned cleanup",
+      "durationSeconds": 24,
+      "visual": "media/cards/owned-cleanup.png",
+      "motion": "drift-right",
+      "narration": "Finishing also means restoring the workstation. Gatehold cleans the proven process group, dev server, browser profile, and port opened by a managed task. Exit, interruption, lost heartbeat, and daemon recovery share one idempotent path. Gatehold shuts down only the exact simulator it booted and confirmed; human simulators stay untouched."
+    },
+    {
+      "id": "S07",
+      "title": "Codex through the gate",
+      "durationSeconds": 18,
+      "visual": "media/cards/codex-client.png",
+      "motion": "push-in",
+      "narration": "Codex built and tested this repository, and it is also a controlled client. The Gatehold skill requires claim before edit, governed execution for heavy work, heartbeat during long tasks, and release on completion. There is no bypass-on-error path."
+    },
+    {
+      "id": "S08",
+      "title": "Honest replay and privacy",
+      "durationSeconds": 18,
+      "visual": "media/cards/privacy-boundary.png",
+      "motion": "drift-left",
+      "narration": "The public dashboard is a labeled synthetic replay. Live local mode reads only the loopback daemon. Deterministic policy needs no API key, and optional model calls use bounded, sanitized metadata with storage disabled."
+    },
+    {
+      "id": "S09",
+      "title": "No pile-up",
+      "durationSeconds": 15,
+      "visual": "media/stills/scene-d-release.png",
+      "motion": "push-in",
+      "narration": "Gatehold gives cooperative agents a simple rule: one owner, one isolated runtime lane, owned cleanup at the finish, and no heavy start without clearance. One machine. Many agents. Zero collisions."
+    }
+  ]
+}

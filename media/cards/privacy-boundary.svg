@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="44%" r="62%">
+      <stop offset="0%" stop-color="#f6bd69" stop-opacity="0.11"/>
+      <stop offset="100%" stop-color="#070b09" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#17201c" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="#070b09"/>
+  <rect width="1920" height="1080" fill="url(#grid)" opacity="0.56"/>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+  <g transform="translate(120 78)">
+    <g>
+      <rect width="26" height="26" rx="8" fill="none" stroke="#f6bd69" stroke-width="3"/>
+      <path d="M7 13h12M13 7v12" stroke="#f6bd69" stroke-width="2"/>
+      <text x="43" y="21" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="27" font-weight="760" letter-spacing="4">GATEHOLD</text>
+      <text x="1278" y="20" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="17" letter-spacing="2">EVERY AGENT NEEDS CLEARANCE</text>
+    </g>
+    <line x1="0" y1="55" x2="1680" y2="55" stroke="#26322d"/>
+    <text x="0" y="125" fill="#f6bd69" font-family="SFMono-Regular, Menlo, monospace" font-size="17" letter-spacing="3">HONEST PUBLIC DEMO · PRIVATE LOCAL CONTROL</text>
+    <text x="0" y="204" fill="#f2f7f4" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="58" font-weight="720">Useful offline. Private by design.</text>
+    <text x="0" y="255" fill="#93a299" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="25">Replay and Live local are visibly separate modes</text>
+    <g transform="translate(0 316)">
+
+      <g transform="translate(0 0)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#f6bd69"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">PUBLIC REPLAY</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">Bounded synthetic data</text>
+      </g>
+      <g transform="translate(0 116)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#f6bd69"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">LIVE LOCAL</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">Read-only loopback daemon</text>
+      </g>
+      <g transform="translate(0 232)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#f6bd69"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">DETERMINISTIC CORE</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">Works without an API key</text>
+      </g>
+      <g transform="translate(0 348)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#f6bd69"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">GPT-5.6</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">Sanitized metadata · store false · hold only</text>
+      </g>
+    </g>
+    <g transform="translate(0 826)">
+      <rect width="1448" height="72" rx="18" fill="#f6bd69" fill-opacity="0.09" stroke="#f6bd69" stroke-opacity="0.38"/>
+      <text x="30" y="46" fill="#f6bd69" font-family="SFMono-Regular, Menlo, monospace" font-size="19" letter-spacing="1.5">No prompts, code, diffs, commands, or secrets in receipts</text>
+    </g>
+  </g>
+</svg>

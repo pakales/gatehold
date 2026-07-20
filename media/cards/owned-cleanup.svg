@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="44%" r="62%">
+      <stop offset="0%" stop-color="#a8f5ce" stop-opacity="0.11"/>
+      <stop offset="100%" stop-color="#070b09" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#17201c" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="#070b09"/>
+  <rect width="1920" height="1080" fill="url(#grid)" opacity="0.56"/>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+  <g transform="translate(120 78)">
+    <g>
+      <rect width="26" height="26" rx="8" fill="none" stroke="#a8f5ce" stroke-width="3"/>
+      <path d="M7 13h12M13 7v12" stroke="#a8f5ce" stroke-width="2"/>
+      <text x="43" y="21" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="27" font-weight="760" letter-spacing="4">GATEHOLD</text>
+      <text x="1278" y="20" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="17" letter-spacing="2">EVERY AGENT NEEDS CLEARANCE</text>
+    </g>
+    <line x1="0" y1="55" x2="1680" y2="55" stroke="#26322d"/>
+    <text x="0" y="125" fill="#a8f5ce" font-family="SFMono-Regular, Menlo, monospace" font-size="17" letter-spacing="3">OWNERSHIP CONTINUES THROUGH CLEANUP</text>
+    <text x="0" y="204" fill="#f2f7f4" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="58" font-weight="720">Finish clean. Touch only what you own.</text>
+    <text x="0" y="255" fill="#93a299" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="25">Exit · interruption · lost heartbeat · daemon recovery</text>
+    <g transform="translate(0 316)">
+
+      <g transform="translate(0 0)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#a8f5ce"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">PROCESS GROUP</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">TERM → bounded wait → KILL</text>
+      </g>
+      <g transform="translate(0 116)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#a8f5ce"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">DEV SERVER + PORT</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">Released with owner provenance</text>
+      </g>
+      <g transform="translate(0 232)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#a8f5ce"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">BROWSER PROFILE</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">Dedicated lane removed safely</text>
+      </g>
+      <g transform="translate(0 348)">
+        <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
+        <circle cx="38" cy="46" r="7" fill="#a8f5ce"/>
+        <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">SIMULATOR</text>
+        <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">Exact UDID + boot proof required</text>
+      </g>
+    </g>
+    <g transform="translate(0 826)">
+      <rect width="1448" height="72" rx="18" fill="#a8f5ce" fill-opacity="0.09" stroke="#a8f5ce" stroke-opacity="0.38"/>
+      <text x="30" y="46" fill="#a8f5ce" font-family="SFMono-Regular, Menlo, monospace" font-size="19" letter-spacing="1.5">Proven ownership only · ambiguity quarantines the lane</text>
+    </g>
+  </g>
+</svg>

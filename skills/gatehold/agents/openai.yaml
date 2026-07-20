@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gatehold"
+  short_description: "Claim safe work lanes before agents edit or build"
+  default_prompt: "Use $gatehold to claim this workstream, wait for deterministic clearance, run heavy work through its governor, and release every lease."
