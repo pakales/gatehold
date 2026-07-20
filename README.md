@@ -371,9 +371,11 @@ documentation, and Codex skill.
 
 The primary Codex `/feedback` session ID is
 `019f7221-2421-78e3-b12e-f6082da1ed87`. Dated public commit links are recorded
-in [Devpost Submission Copy](docs/SUBMISSION.md). The final validation revision
-must be recorded only after the last documentation change and a green public
-CI run; until then, `PENDING_FINAL_GREEN_SHA` is a marker rather than evidence.
+in [Devpost Submission Copy](docs/SUBMISSION.md). The final executable source
+revision is
+[`abc2782cb77b5e7940ddab86f78e7d0888b6d20c`](https://github.com/pakales/gatehold/commit/abc2782cb77b5e7940ddab86f78e7d0888b6d20c);
+it passed the complete public
+[Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29731214328).
 
 ## Repository map
 

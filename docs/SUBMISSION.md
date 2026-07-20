@@ -1,9 +1,8 @@
 # Gatehold — Devpost Submission Copy
 
 This file is the English source of truth for the OpenAI Build Week entry. The
-public links and Codex evidence identifier below are verified. The final
-validation revision remains an explicit marker until the last public commit
-passes CI.
+public links, Codex evidence identifier, and final validated source revision
+below are verified.
 
 ## Submission fields
 
@@ -413,5 +412,6 @@ The public-link update is
 [`ae268a5dfcc7240d59a55ffcad9d91553311ff04`](https://github.com/pakales/gatehold/commit/ae268a5dfcc7240d59a55ffcad9d91553311ff04).
 
 **Final validation revision:**
-`PENDING_FINAL_GREEN_SHA` — replace only after the final public commit passes
-the complete CI gate.
+[`abc2782cb77b5e7940ddab86f78e7d0888b6d20c`](https://github.com/pakales/gatehold/commit/abc2782cb77b5e7940ddab86f78e7d0888b6d20c)
+— passed the complete public
+[Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29731214328).
