@@ -42,7 +42,7 @@ test("server-renders the Gatehold clearance deck", async () => {
   assert.match(normalized, /Every agent needs clearance\./);
   assert.match(
     normalized,
-    /One machine\. Many agents\. One clearance layer\./,
+    /One machine\.[\s\S]*Many agents\.[\s\S]*One clearance layer\./,
   );
   assert.match(normalized, /Clearance decision/);
   assert.match(normalized, /Agent clearance lanes/);

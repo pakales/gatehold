@@ -74,6 +74,7 @@ type DemoScene = {
   summary: string;
   verdict: "CLEARED" | "HOLD" | "RELEASED";
   verdictTone: Tone;
+  focusLaneIndex: number;
   host: HostSnapshot;
   lanes: readonly Lane[];
   events: readonly {
@@ -110,6 +111,7 @@ const demoScenes: readonly DemoScene[] = [
       "Agent 07 owns auth/session and the host has room. The task enters an isolated runtime lane.",
     verdict: "CLEARED",
     verdictTone: "mint",
+    focusLaneIndex: 0,
     host: {
       cpu: 38,
       ram: 52,
@@ -189,6 +191,7 @@ const demoScenes: readonly DemoScene[] = [
       "Agent 18 asks to “harden session renewal.” GPT-5.6 raises a conservative review hold; deterministic policy remains authoritative.",
     verdict: "HOLD",
     verdictTone: "coral",
+    focusLaneIndex: 1,
     host: {
       cpu: 44,
       ram: 56,
@@ -268,6 +271,7 @@ const demoScenes: readonly DemoScene[] = [
       "The archive does not overlap, but memory pressure is high and both heavy slots are occupied. It waits in FIFO order.",
     verdict: "HOLD",
     verdictTone: "amber",
+    focusLaneIndex: 2,
     host: {
       cpu: 86,
       ram: 91,
@@ -347,6 +351,7 @@ const demoScenes: readonly DemoScene[] = [
       "Agent 12 finishes and returns its heavy slot. Gatehold later cleans only an exact runtime it booted and confirmed; prebooted human simulators stay untouched.",
     verdict: "RELEASED",
     verdictTone: "mint",
+    focusLaneIndex: 1,
     host: {
       cpu: 61,
       ram: 68,
@@ -504,6 +509,26 @@ function ClearanceCell({
   );
 }
 
+function DecisionKey({
+  kind,
+  clearance,
+}: {
+  kind: string;
+  clearance: Lane["workstream"];
+}) {
+  return (
+    <span className={`decision-key key-${clearance.state}`}>
+      <span className="decision-key-icon">
+        <StatusMark state={clearance.state} />
+      </span>
+      <span>
+        <small>{kind}</small>
+        <strong>{clearance.label}</strong>
+      </span>
+    </span>
+  );
+}
+
 function Metric({
   label,
   value,
@@ -551,6 +576,7 @@ export function GateholdDashboard() {
     useState<LocalDaemonSnapshot | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const scene = demoScenes[sceneIndex];
+  const focusLane = scene.lanes[scene.focusLaneIndex] ?? scene.lanes[0];
   const modeCopy = liveCopy[liveState];
   const sourceBoundary = boundaryCopy[liveState];
   const isLiveHost = liveState === "live";
@@ -703,7 +729,9 @@ export function GateholdDashboard() {
   }
 
   return (
-    <main className="gatehold-shell">
+    <main
+      className={`gatehold-shell${isRunning ? " demo-running" : ""}`}
+    >
       <div className="ambient-grid" aria-hidden="true" />
       <header className="topbar">
         <a className="brand" href="#control-deck" aria-label="Gatehold home">
@@ -754,63 +782,111 @@ export function GateholdDashboard() {
             ) : (
               <Play aria-hidden="true" size={16} fill="currentColor" />
             )}
-            <span>{isRunning ? "Playing clearance…" : "Play 4-step demo"}</span>
+            <span className="button-label-full">
+              {isRunning ? "Playing clearance…" : "Play 4-step demo"}
+            </span>
+            <span className="button-label-short">
+              {isRunning ? "Playing…" : "Play demo"}
+            </span>
           </button>
         </div>
       </header>
 
-      <section className="intro" aria-labelledby="control-deck">
-        <div>
+      <section
+        className={`hero-stage hero-${scene.verdictTone}`}
+        aria-labelledby="control-deck"
+      >
+        <div className="intro">
           <p className="eyebrow">
             <CircleDot aria-hidden="true" size={13} />
             Local clearance for parallel coding agents
           </p>
           <h1 id="control-deck">
-            One machine. Many agents.
-            <span> One clearance layer.</span>
+            <span className="headline-main">One machine.</span>
+            <span className="headline-main">Many agents.</span>
+            <span className="headline-accent">One clearance layer.</span>
           </h1>
-        </div>
-        <div className="intro-note">
-          <strong className="product-contract">
-            Two keys to start. Verified cleanup to release.
-          </strong>
-          <p>
-            Gatehold blocks overlapping work, queues heavy jobs when the host
-            is full, and releases a lane only after owned cleanup is verified.
-          </p>
-          <div className="authority-rule">
-            <ShieldCheck aria-hidden="true" size={17} />
-            <span>
-              <strong>Deterministic policy grants clearance.</strong>
-              <small>GPT-5.6 can only add a hold.</small>
-            </span>
+          <div className="intro-note">
+            <strong className="product-contract">
+              Two keys to start. Verified cleanup to release.
+            </strong>
+            <p>
+              Gatehold blocks overlapping work, queues heavy jobs when the host
+              is full, and releases a lane only after owned cleanup is verified.
+            </p>
+            <div className="authority-rule">
+              <ShieldCheck aria-hidden="true" size={17} />
+              <span>
+                <strong>Deterministic policy grants clearance.</strong>
+                <small>GPT-5.6 can only add a hold.</small>
+              </span>
+            </div>
           </div>
         </div>
+
+        <section
+          className={`decision-deck decision-${scene.verdictTone}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div className="decision-signal">
+            <span>Now · Scene {scene.step}</span>
+            <strong>{scene.verdict}</strong>
+          </div>
+          <div className="decision-copy">
+            <span className="decision-agent">
+              {focusLane.agent} · {focusLane.weight} lane
+            </span>
+            <h2>{scene.title}</h2>
+            <p>{scene.summary}</p>
+          </div>
+          <div className="decision-contract" aria-label="Gatehold two-key rule">
+            <DecisionKey
+              kind={
+                scene.verdict === "RELEASED"
+                  ? "Cleanup receipt"
+                  : "Workstream key"
+              }
+              clearance={focusLane.workstream}
+            />
+            <DecisionKey
+              kind={
+                scene.verdict === "RELEASED"
+                  ? "Capacity return"
+                  : "Capacity key"
+              }
+              clearance={focusLane.capacity}
+            />
+          </div>
+        </section>
       </section>
 
-      <section
-        className={`decision-deck decision-${scene.verdictTone}`}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <div className="decision-signal">
-          <span>Now · Scene {scene.step}</span>
-          <strong>{scene.verdict}</strong>
+      <section className="scenario-console" aria-label="Demo controls">
+        <div
+          className={`source-boundary source-boundary-${liveState}`}
+          role="status"
+          aria-live="polite"
+        >
+          <Radio aria-hidden="true" size={13} />
+          <strong>{sourceBoundary.title}</strong>
+          <span>{sourceBoundary.detail}</span>
         </div>
-        <div className="decision-copy">
-          <h2>{scene.title}</h2>
-          <p>{scene.summary}</p>
-        </div>
-        <div className="decision-contract" aria-label="Gatehold two-key rule">
-          <span>
-            <small>Key 01</small>
-            <strong>Workstream owner</strong>
-          </span>
-          <span>
-            <small>Key 02</small>
-            <strong>Host capacity</strong>
-          </span>
-        </div>
+
+        <nav className="scene-switcher" aria-label="Collision demo scenes">
+          {demoScenes.map((demoScene, index) => (
+            <button
+              key={demoScene.id}
+              type="button"
+              className={`${index === sceneIndex ? "scene-active " : ""}scene-${demoScene.verdictTone}`}
+              aria-current={index === sceneIndex ? "step" : undefined}
+              aria-label={`Scene ${demoScene.step}: ${demoScene.shortLabel}`}
+              onClick={() => selectScene(index)}
+            >
+              <span>{demoScene.step}</span>
+              <strong>{demoScene.shortLabel}</strong>
+            </button>
+          ))}
+        </nav>
       </section>
 
       <section
@@ -851,32 +927,6 @@ export function GateholdDashboard() {
           icon={<LockKeyhole aria-hidden="true" size={17} />}
         />
       </section>
-
-      <div
-        className={`source-boundary source-boundary-${liveState}`}
-        role="status"
-        aria-live="polite"
-      >
-        <Radio aria-hidden="true" size={13} />
-        <strong>{sourceBoundary.title}</strong>
-        <span>{sourceBoundary.detail}</span>
-      </div>
-
-      <nav className="scene-switcher" aria-label="Collision demo scenes">
-        {demoScenes.map((demoScene, index) => (
-          <button
-            key={demoScene.id}
-            type="button"
-            className={index === sceneIndex ? "scene-active" : ""}
-            aria-current={index === sceneIndex ? "step" : undefined}
-            aria-label={`Scene ${demoScene.step}: ${demoScene.shortLabel}`}
-            onClick={() => selectScene(index)}
-          >
-            <span>{demoScene.step}</span>
-            <strong>{demoScene.shortLabel}</strong>
-          </button>
-        ))}
-      </nav>
 
       <section className="control-grid">
         <article className="panel radar-panel" aria-labelledby="host-core-title">
@@ -944,7 +994,9 @@ export function GateholdDashboard() {
           <div className="lane-list">
             {scene.lanes.map((lane, index) => (
               <article
-                className={`lane-card lane-${lane.tone}`}
+                className={`lane-card lane-${lane.tone}${
+                  index === scene.focusLaneIndex ? " lane-focus" : ""
+                }`}
                 key={`${scene.id}-${lane.id}`}
               >
                 <div className="lane-index" aria-hidden="true">
