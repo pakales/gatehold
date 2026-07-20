@@ -13,8 +13,8 @@
       "id": "S01",
       "title": "The collision",
       "durationSeconds": 13,
-      "visual": "public/gatehold-og.png",
-      "motion": "push-in",
+      "visual": "media/cards/title-safe.png",
+      "motion": "push-in-safe",
       "narration": "Parallel coding agents are fast. But a workstation still shares product work, ports, browsers, simulators, and finite compute. Two agents can be individually correct and still collide."
     },
     {

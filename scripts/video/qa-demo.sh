@@ -11,6 +11,10 @@ LOUDNESS="$REVIEW/loudness.json"
 CONTACT="$REVIEW/contact-sheet.png"
 REPORT="$REVIEW/qa-report.json"
 CHECKSUMS="$REVIEW/checksums.sha256"
+TITLE_SAFE_MINIMUM=192
+TITLE_SAFE_MIN_LEFT=1920
+SAFE_FRAME="$(mktemp "${TMPDIR:-/tmp}/gatehold-title-safe.XXXXXX.png")"
+trap 'rm -f "$SAFE_FRAME"' EXIT
 
 mkdir -p "$REVIEW"
 [[ -s "$FINAL" ]] || { printf 'Missing final video: %s\n' "$FINAL" >&2; exit 1; }
@@ -60,6 +64,31 @@ awk -v value="$true_peak" 'BEGIN { exit !(value <= -1.0) }' || {
 }
 
 ffmpeg -nostdin -hide_banner -v error -i "$FINAL" -f null -
+
+for timestamp in 0.50 6.00 12.00; do
+  ffmpeg -nostdin -y -hide_banner -loglevel error \
+    -ss "$timestamp" -i "$FINAL" -frames:v 1 "$SAFE_FRAME"
+  title_left="$(magick "$SAFE_FRAME" \
+    -crop 800x260+0+400 \
+    -colorspace gray \
+    -threshold 60% \
+    -trim \
+    -format '%X' info:)"
+  title_left="${title_left#+}"
+  [[ "$title_left" =~ ^[0-9]+$ ]] || {
+    printf 'Title-safe detection failed at %ss.\n' "$timestamp" >&2
+    exit 1
+  }
+  if (( title_left < TITLE_SAFE_MIN_LEFT )); then
+    TITLE_SAFE_MIN_LEFT="$title_left"
+  fi
+done
+(( TITLE_SAFE_MIN_LEFT >= TITLE_SAFE_MINIMUM )) || {
+  printf 'Title-safe gate failed: left=%spx required=%spx.\n' \
+    "$TITLE_SAFE_MIN_LEFT" "$TITLE_SAFE_MINIMUM" >&2
+  exit 1
+}
+
 ffmpeg -nostdin -y -hide_banner -loglevel error \
   -i "$FINAL" \
   -vf "fps=1/12,scale=480:270:force_original_aspect_ratio=decrease:flags=lanczos,pad=480:270:(ow-iw)/2:(oh-ih)/2,tile=4x4" \
@@ -97,6 +126,8 @@ jq -n \
   --arg audio "${audio_codec}/${sample_rate}Hz/${channels}ch" \
   --argjson integratedLufs "$integrated" \
   --argjson truePeakDbtp "$true_peak" \
+  --argjson titleSafeMinimumPx "$TITLE_SAFE_MINIMUM" \
+  --argjson titleSafeObservedLeftPx "$TITLE_SAFE_MIN_LEFT" \
   --arg contactSheet "media/review/contact-sheet.png" \
   --arg disclosure "$(jq -r '.voice.disclosure' "$MANIFEST")" \
   '{
@@ -107,6 +138,11 @@ jq -n \
     audio: $audio,
     integratedLufs: $integratedLufs,
     truePeakDbtp: $truePeakDbtp,
+    titleSafe: {
+      status: "PASS",
+      minimumLeftPx: $titleSafeMinimumPx,
+      observedLeftPx: $titleSafeObservedLeftPx
+    },
     decodeErrors: 0,
     captionsExact: true,
     aiVoiceDisclosure: $disclosure,
