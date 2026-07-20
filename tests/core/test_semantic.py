@@ -226,6 +226,145 @@ def test_semantic_payload_redacts_email_and_common_secret_shapes() -> None:
 
 
 @pytest.mark.parametrize(
+    ("secret_text", "raw_secret"),
+    [
+        (
+            "aws_access_key_id=" + "AKIA" + "A1B2C3D4E5F6G7H8",
+            "AKIA" + "A1B2C3D4E5F6G7H8",
+        ),
+        (
+            "AWS_SECRET_ACCESS_KEY=" + ("aB3/" * 10),
+            "aB3/" * 10,
+        ),
+        (
+            "jwt="
+            + "eyJhbGciOiJIUzI1NiJ9"
+            + ".eyJzdWIiOiIxMjM0NTY3ODkwIn0"
+            + ".abcDEF0123456789abcDEF0123456789",
+            "eyJhbGciOiJIUzI1NiJ9"
+            + ".eyJzdWIiOiIxMjM0NTY3ODkwIn0"
+            + ".abcDEF0123456789abcDEF0123456789",
+        ),
+        (
+            "slack_token=" + "xoxb-" + "123456789012-" + "abcdefghijklmnopqrstuvwx",
+            "xoxb-" + "123456789012-" + "abcdefghijklmnopqrstuvwx",
+        ),
+        (
+            "api_key=" + "Q7v9mN2pL8xR4sT6uW3zA5cD",
+            "Q7v9mN2pL8xR4sT6uW3zA5cD",
+        ),
+        (
+            "Authorization: Bearer " + "T9m2Q7vL4xR8pN6sK3wZ5cD1",
+            "T9m2Q7vL4xR8pN6sK3wZ5cD1",
+        ),
+        (
+            "access_token=" + ("0123456789abcdef" * 2),
+            "0123456789abcdef" * 2,
+        ),
+        (
+            "STRIPE_SECRET_KEY=" + "S9t4R7i2P8e5K3y6V1a0L4u7",
+            "S9t4R7i2P8e5K3y6V1a0L4u7",
+        ),
+        (
+            "GITHUB_TOKEN=" + "G8h3T6o9K2e5N7v4A1l0U6e3",
+            "G8h3T6o9K2e5N7v4A1l0U6e3",
+        ),
+        (
+            "CUSTOM_API_KEY=" + "C7u4S9t2O5m8K3e6Y1v0A4l7",
+            "C7u4S9t2O5m8K3e6Y1v0A4l7",
+        ),
+        (
+            "stripe_secret_key=" + "S5t8R2i7P4e9K6y3V1a0L5u8",
+            "S5t8R2i7P4e9K6y3V1a0L5u8",
+        ),
+        (
+            "GitHub_Token=" + "G4h7T1o8K5e2N9v6A3l0U4e7",
+            "G4h7T1o8K5e2N9v6A3l0U4e7",
+        ),
+        (
+            "CUSTOM_API_KEY=" + "K9exampleR4d7Q2m8N6v3T1x5",
+            "K9exampleR4d7Q2m8N6v3T1x5",
+        ),
+        (
+            "GITHUB_TOKEN=" + "R7redactedZ9m4Q2v8L6s3T1c5",
+            "R7redactedZ9m4Q2v8L6s3T1c5",
+        ),
+    ],
+    ids=[
+        "aws-access-key-id",
+        "aws-secret-access-key",
+        "jwt",
+        "slack-token",
+        "contextual-api-key",
+        "bearer-token",
+        "contextual-hex-token",
+        "prefixed-stripe-secret-key",
+        "prefixed-github-token",
+        "prefixed-custom-api-key",
+        "lowercase-prefixed-secret-key",
+        "mixed-case-prefixed-token",
+        "embedded-example-is-not-exempt",
+        "embedded-redacted-is-not-exempt",
+    ],
+)
+def test_semantic_payload_redacts_high_confidence_secret_formats(
+    secret_text: str,
+    raw_secret: str,
+) -> None:
+    fake = FakeResponses(response=FakeResponse(output_parsed=_clear_model_output()))
+    comparator = _comparator(fake)
+
+    comparator.compare(
+        SemanticCandidate(
+            workstream="Credential boundary review",
+            scopes=("src/security",),
+            summary=f"Never send {secret_text} to the model",
+        ),
+        SemanticCandidate(workstream="Other work", scopes=("src/other",)),
+        active_lease_id="lease-high-confidence-secret",
+    )
+
+    payload_text = cast(str, fake.calls[0]["input"])
+    assert raw_secret not in payload_text
+    assert "<secret>" in payload_text
+
+
+@pytest.mark.parametrize(
+    "benign_text",
+    [
+        "Document api_key=placeholder-value-for-local-tests",
+        "Document access_token=example-token-value-2026",
+        "Set client_secret=not-a-secret-placeholder",
+        "Document CUSTOM_API_KEY=placeholder-value-for-local-tests",
+        "Document GITHUB_TOKEN=example-token-value-2026",
+        "Set STRIPE_SECRET_KEY=not-a-secret-placeholder",
+        "Document stripe_secret_key=placeholder-value-for-local-tests",
+        "Document GitHub_Token=example-token-value-2026",
+        "A JWT starts with eyJ but this has only two.parts",
+        "Slack uses an xoxb-short prefix in examples",
+        "AWS access key IDs begin with AKIA123 in this format note",
+        "Compare commit 0123456789abcdef0123456789abcdef01234567",
+        "The release token budget is 4096",
+    ],
+)
+def test_semantic_payload_preserves_benign_secret_like_text(benign_text: str) -> None:
+    fake = FakeResponses(response=FakeResponse(output_parsed=_clear_model_output()))
+
+    _comparator(fake).compare(
+        SemanticCandidate(
+            workstream="Security documentation",
+            scopes=("docs/security",),
+            summary=benign_text,
+        ),
+        SemanticCandidate(workstream="Other work", scopes=("src/other",)),
+        active_lease_id="lease-benign-secret-like-text",
+    )
+
+    payload = cast(dict[str, dict[str, object]], json.loads(cast(str, fake.calls[0]["input"])))
+    assert payload["candidate"]["summary_hint"] == benign_text
+
+
+@pytest.mark.parametrize(
     ("parsed", "expected_verdict", "expected_reason"),
     [
         (

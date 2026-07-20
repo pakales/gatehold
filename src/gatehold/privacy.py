@@ -5,7 +5,9 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import re
 import secrets
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -19,6 +21,100 @@ from .models import (
     Receipt,
     SemanticAssessment,
 )
+
+_CHILD_ENVIRONMENT_ALLOWLIST = (
+    "PATH",
+    "HOME",
+    "TMPDIR",
+    "TMP",
+    "TEMP",
+    "USER",
+    "LOGNAME",
+    "LANG",
+    "LANGUAGE",
+    "LC_ALL",
+    "LC_CTYPE",
+    "TZ",
+    "TERM",
+    "COLORTERM",
+    "NO_COLOR",
+    "FORCE_COLOR",
+    "CI",
+    "DEVELOPER_DIR",
+    "SDKROOT",
+    "VIRTUAL_ENV",
+)
+_MAX_PASSED_ENVIRONMENT_NAMES = 32
+_ENVIRONMENT_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]{0,127}\Z")
+_SECRET_ENVIRONMENT_MARKER = re.compile(
+    r"(?:^|_)(?:API_?KEY|KEY|TOKEN|PAT|SECRET|PASSWORD|PASSWD|CREDENTIALS?|"
+    r"AUTH|COOKIE|SESSION|PRIVATE|JWT)(?:_|$)"
+)
+# Bounded high-impact list: common credential carriers plus environment hooks
+# that can load code or alternate configuration before the requested argv runs.
+# Gatehold remains a cooperative governor, not a general environment sandbox.
+_FORBIDDEN_CHILD_ENVIRONMENT_NAMES = frozenset(
+    {
+        "AWS_PROFILE",
+        "BASH_ENV",
+        "DATABASE_URL",
+        "DOCKER_CONFIG",
+        "DOTNET_ADDITIONAL_DEPS",
+        "DOTNET_STARTUP_HOOKS",
+        "GH_PAT",
+        "GITHUB_PAT",
+        "GITHUB_ENV",
+        "GITHUB_OUTPUT",
+        "GITHUB_PATH",
+        "GITHUB_STATE",
+        "GIT_ASKPASS",
+        "GIT_CONFIG_GLOBAL",
+        "GIT_CONFIG_NOSYSTEM",
+        "GIT_CONFIG_PARAMETERS",
+        "GIT_CONFIG_SYSTEM",
+        "GIT_EXEC_PATH",
+        "GIT_SSH",
+        "GIT_SSH_COMMAND",
+        "GPG_AGENT_INFO",
+        "JDK_JAVA_OPTIONS",
+        "JAVA_TOOL_OPTIONS",
+        "KUBECONFIG",
+        "LD_AUDIT",
+        "LD_LIBRARY_PATH",
+        "LD_PRELOAD",
+        "MYSQL_PWD",
+        "NODE_OPTIONS",
+        "NODE_PATH",
+        "NPM_CONFIG_GLOBALCONFIG",
+        "NPM_CONFIG_SCRIPT_SHELL",
+        "NPM_CONFIG_USERCONFIG",
+        "PERL5LIB",
+        "PERL5OPT",
+        "PGPASSFILE",
+        "PGPASSWORD",
+        "PHPRC",
+        "PHP_INI_SCAN_DIR",
+        "PIP_CONFIG_FILE",
+        "PYTHONBREAKPOINT",
+        "PYTHONHOME",
+        "PYTHONINSPECT",
+        "PYTHONPATH",
+        "PYTHONPLATLIBDIR",
+        "PYTHONSTARTUP",
+        "PYTHONUSERBASE",
+        "PYTHONWARNINGS",
+        "REDIS_URL",
+        "RUBYLIB",
+        "RUBYOPT",
+        "SENTRY_DSN",
+        "SSH_AUTH_SOCK",
+        "SSH_ASKPASS",
+        "UV_CONFIG_FILE",
+        "ZDOTDIR",
+        "_JAVA_OPTIONS",
+    }
+)
+_FORBIDDEN_CHILD_ENVIRONMENT_PREFIXES = ("DYLD_", "GATEHOLD_", "GIT_CONFIG_")
 
 
 def sha256_text(value: str) -> str:
@@ -42,6 +138,39 @@ def secret_digest(secret: str) -> str:
 
 def verify_secret(secret: str, expected_digest: str) -> bool:
     return hmac.compare_digest(secret_digest(secret), expected_digest)
+
+
+def safe_child_environment(
+    source: Mapping[str, str],
+    *,
+    pass_names: Sequence[str] = (),
+) -> dict[str, str]:
+    """Keep runtime defaults plus explicitly requested non-secret settings."""
+
+    if len(pass_names) > _MAX_PASSED_ENVIRONMENT_NAMES:
+        raise ValueError(
+            f"--pass-env may be repeated at most {_MAX_PASSED_ENVIRONMENT_NAMES} times"
+        )
+
+    environment = {
+        name: source[name]
+        for name in _CHILD_ENVIRONMENT_ALLOWLIST
+        if name in source
+    }
+    for name in pass_names:
+        normalized = name.upper()
+        if not _ENVIRONMENT_NAME.fullmatch(name):
+            raise ValueError("--pass-env requires a valid environment variable name")
+        if (
+            normalized in _FORBIDDEN_CHILD_ENVIRONMENT_NAMES
+            or normalized.startswith(_FORBIDDEN_CHILD_ENVIRONMENT_PREFIXES)
+            or _SECRET_ENVIRONMENT_MARKER.search(normalized)
+        ):
+            raise ValueError(f"--pass-env may not forward protected variable {name}")
+        if name not in source:
+            raise ValueError(f"--pass-env variable {name} is not set")
+        environment[name] = source[name]
+    return environment
 
 
 def executable_name(argv0: str) -> str:

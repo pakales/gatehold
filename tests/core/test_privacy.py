@@ -17,6 +17,7 @@ from gatehold.privacy import (
     executable_name,
     make_receipt,
     new_secret,
+    safe_child_environment,
     scope_digest,
     secret_digest,
     verify_secret,
@@ -151,6 +152,188 @@ def test_credentials_are_random_hashed_and_constant_time_verifiable() -> None:
     assert secret_digest(first) != first
     assert verify_secret(first, secret_digest(first))
     assert not verify_secret(second, secret_digest(first))
+
+
+def test_generated_secret_cannot_look_like_a_cli_option(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def option_like_secret(_byte_count: int) -> str:
+        return f"-{'a' * 42}"
+
+    monkeypatch.setattr(
+        "gatehold.privacy.secrets.token_urlsafe",
+        option_like_secret,
+    )
+
+    token = new_secret()
+
+    assert token == f"gh_-{'a' * 42}"
+    assert not token.startswith("-")
+
+
+def test_safe_child_environment_preserves_only_required_runtime_settings() -> None:
+    environment = {
+        "PATH": "/opt/homebrew/bin:/usr/bin:/bin",
+        "HOME": "/Users/example",
+        "TMPDIR": "/private/tmp/example",
+        "LANG": "lt_LT.UTF-8",
+        "TERM": "xterm-256color",
+        "CI": "true",
+        "DEVELOPER_DIR": "/Applications/Xcode.app/Contents/Developer",
+        "SDKROOT": "iphoneos",
+        "VIRTUAL_ENV": "/repo/.venv",
+        "UNRELATED_FEATURE_FLAG": "must-not-propagate",
+    }
+
+    child_environment = safe_child_environment(environment)
+
+    assert child_environment == {
+        "PATH": environment["PATH"],
+        "HOME": environment["HOME"],
+        "TMPDIR": environment["TMPDIR"],
+        "LANG": environment["LANG"],
+        "TERM": environment["TERM"],
+        "CI": environment["CI"],
+        "DEVELOPER_DIR": environment["DEVELOPER_DIR"],
+        "SDKROOT": environment["SDKROOT"],
+        "VIRTUAL_ENV": environment["VIRTUAL_ENV"],
+    }
+
+
+def test_safe_child_environment_passes_bounded_non_secret_tool_settings() -> None:
+    environment = {
+        "PATH": "/usr/bin:/bin",
+        "UV_CACHE_DIR": "/Users/example/Library/Caches/uv",
+        "NPM_CONFIG_CACHE": "/Users/example/Library/Caches/npm",
+        "NODE_ENV": "test",
+        "AWS_REGION": "eu-west-1",
+        "GITHUB_REPOSITORY": "example/repository",
+        "PGHOST": "127.0.0.1",
+        "PGPORT": "5432",
+    }
+
+    child_environment = safe_child_environment(
+        environment,
+        pass_names=(
+            "UV_CACHE_DIR",
+            "NPM_CONFIG_CACHE",
+            "NODE_ENV",
+            "AWS_REGION",
+            "GITHUB_REPOSITORY",
+            "PGHOST",
+            "PGPORT",
+        ),
+    )
+
+    assert child_environment == environment
+
+
+@pytest.mark.parametrize(
+    "secret_name",
+    [
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_SESSION_TOKEN",
+        "AWS_PROFILE",
+        "AWS_WEB_IDENTITY_TOKEN_FILE",
+        "GITHUB_TOKEN",
+        "GITHUB_PAT",
+        "GH_PAT",
+        "GITHUB_ENV",
+        "GH_TOKEN",
+        "NPM_TOKEN",
+        "DATABASE_URL",
+        "PGPASSWORD",
+        "STRIPE_SECRET_KEY",
+        "SSH_AUTH_SOCK",
+        "CUSTOM_INTERNAL_SECRET",
+    ],
+)
+def test_safe_child_environment_strips_cloud_and_common_secrets(
+    secret_name: str,
+) -> None:
+    child_environment = safe_child_environment(
+        {
+            "PATH": "/usr/bin:/bin",
+            secret_name: "test-only-secret",
+        }
+    )
+
+    assert child_environment == {"PATH": "/usr/bin:/bin"}
+
+
+@pytest.mark.parametrize(
+    "protected_name",
+    [
+        "OPENAI_API_KEY",
+        "GATEHOLD_HEARTBEAT_TOKEN",
+        "AWS_SECRET_ACCESS_KEY",
+        "GITHUB_TOKEN",
+        "GH_TOKEN",
+        "GH_PAT",
+        "GITHUB_PAT",
+        "DATABASE_URL",
+        "PGPASSWORD",
+        "PGPASSFILE",
+        "MYSQL_PWD",
+        "SSH_AUTH_SOCK",
+        "BASH_ENV",
+        "NODE_OPTIONS",
+        "NODE_PATH",
+        "PYTHONPATH",
+        "PYTHONBREAKPOINT",
+        "PYTHONUSERBASE",
+        "RUBYOPT",
+        "PERL5OPT",
+        "JAVA_TOOL_OPTIONS",
+        "_JAVA_OPTIONS",
+        "JDK_JAVA_OPTIONS",
+        "LD_AUDIT",
+        "DOTNET_STARTUP_HOOKS",
+        "PHPRC",
+        "NPM_CONFIG_USERCONFIG",
+        "NPM_CONFIG_SCRIPT_SHELL",
+        "GIT_ASKPASS",
+        "SSH_ASKPASS",
+        "GIT_SSH_COMMAND",
+        "GIT_CONFIG_KEY_0",
+        "PIP_CONFIG_FILE",
+        "UV_CONFIG_FILE",
+        "ZDOTDIR",
+        "DYLD_INSERT_LIBRARIES",
+    ],
+)
+def test_safe_child_environment_rejects_explicit_protected_passthrough(
+    protected_name: str,
+) -> None:
+    with pytest.raises(ValueError, match="may not forward protected variable"):
+        safe_child_environment(
+            {protected_name: "test-only-secret"},
+            pass_names=(protected_name,),
+        )
+
+
+@pytest.mark.parametrize("invalid_name", ["", "WITH-DASH", " LEADING", "A" * 129])
+def test_safe_child_environment_rejects_invalid_passthrough_names(
+    invalid_name: str,
+) -> None:
+    with pytest.raises(ValueError, match="valid environment variable name"):
+        safe_child_environment(
+            {invalid_name: "value"},
+            pass_names=(invalid_name,),
+        )
+
+
+def test_safe_child_environment_rejects_missing_or_excessive_passthrough() -> None:
+    with pytest.raises(ValueError, match="MISSING is not set"):
+        safe_child_environment({}, pass_names=("MISSING",))
+    with pytest.raises(ValueError, match="at most 32"):
+        safe_child_environment(
+            {},
+            pass_names=tuple(f"SAFE_{index}" for index in range(33)),
+        )
 
 
 @pytest.mark.parametrize(

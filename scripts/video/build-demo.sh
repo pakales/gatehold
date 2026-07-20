@@ -25,6 +25,7 @@ done
 rm -f "$CONCAT" "$SRT"
 sequence=0
 cursor_ms=0
+shot_count="$(jq '.shots | length' "$MANIFEST")"
 
 format_srt_time() {
   local total_ms="$1"
@@ -92,7 +93,10 @@ while IFS=$'\t' read -r id duration visual motion narration; do
   {
     printf '%d\n' "$sequence"
     printf '%s --> %s\n' "$(format_srt_time "$start_ms")" "$(format_srt_time "$end_ms")"
-    printf '%s\n\n' "$narration"
+    printf '%s\n' "$narration"
+    if (( sequence < shot_count )); then
+      printf '\n'
+    fi
   } >> "$SRT"
   cursor_ms="$end_ms"
 done < <(

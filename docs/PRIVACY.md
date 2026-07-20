@@ -58,6 +58,16 @@ Gatehold does not intentionally persist:
 - child-process command arguments;
 - full process command lines.
 
+Managed commands also do not inherit the ambient environment wholesale.
+Gatehold supplies a small runtime-compatible allowlist and its own
+claim-bound allocation/provenance values. An operator may explicitly forward
+at most 32 present, non-protected settings with repeated `--pass-env NAME`
+flags. Credential-like names, Gatehold controls, and known
+interpreter/startup injection names are rejected before admission. This
+reduces accidental environment leakage; it does not prevent the selected
+program from reading credentials or configuration files already accessible to
+the same OS user.
+
 Deleting the local Gatehold state directory removes the local operational
 history. Do this only while no controlled tasks are active.
 
@@ -73,14 +83,18 @@ The implementation contract requires:
 - bounded input metadata;
 - strict structured output;
 - timeout and output-size limits;
+- high-confidence redaction of home paths, emails, common provider token
+  formats, JWTs, credential assignments, and contextual bearer/API/access
+  secrets before path normalization;
 - no automatic authority escalation;
 - deterministic fallback on missing credentials, refusal, timeout, malformed
   output, or service failure.
 
 OpenAI service handling is also governed by the applicable OpenAI API terms and
-data controls. Operators should avoid putting sensitive client or personal
-information into workstream names and scope summaries even though Gatehold
-bounds them.
+data controls. The sanitizer is a defense-in-depth filter, not general DLP.
+Operators should avoid putting sensitive client or personal information into
+workstream names and scope summaries even though Gatehold bounds and sanitizes
+them.
 
 ## API key handling
 
@@ -98,10 +112,11 @@ The public replay and deterministic local path work without the key.
 ## Browser behavior
 
 Replay mode consumes only synthetic data and cannot read a visitor's
-workstation.
+workstation. The public replay does not probe `127.0.0.1`.
 
 Live-local mode connects to the read-only loopback Gatehold service from the
-same machine. A browser origin must be explicitly and exactly allowlisted with
+same machine only from an HTTP loopback dashboard URL carrying `?local=1`. A
+browser origin must be explicitly and exactly allowlisted with
 `--dashboard-origin` or `GATEHOLD_DASHBOARD_ORIGINS`; a loopback origin is not
 trusted merely because it is local. Non-loopback browser origins must use
 HTTPS. CORS echoes only the configured exact origin, without wildcards or

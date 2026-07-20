@@ -29,20 +29,22 @@ The official rules and Devpost site override this checklist.
 
 - [x] Record the production demo URL in `docs/SUBMISSION.md`.
 - [x] Record the public repository URL.
-- [x] Record the public YouTube URL.
+- [ ] Record the final replacement public YouTube URL.
 - [x] Record the real Codex `/feedback` session ID.
 - [x] Link the dated competition-period commits.
-- [x] Record the final validated source revision.
-- [x] Confirm no submission placeholder remains in public or submitted copy.
-- [x] Confirm public demo opens signed out in a private browser window.
+- [ ] Record the final validated source revision and matching green CI run.
+- [ ] Confirm no pending-release marker remains in public or submitted copy.
+- [ ] Confirm the exact final public demo opens signed out in a private browser
+      window.
 - [x] Confirm public repository opens signed out and includes MIT `LICENSE`.
-- [x] Confirm YouTube visibility is **Public**, not Unlisted or Private.
-- [x] Confirm video runtime is under 3:00 and audio is clear.
+- [ ] Confirm the replacement YouTube video is **Public**, not Unlisted or
+      Private.
+- [x] Confirm the replacement local render is under 3:00 and audio is clear.
 - [ ] Confirm the Devpost form is actually submitted, not only saved as draft.
 
 ## Product readiness
 
-- [x] `npm run verify` passes on the final commit.
+- [ ] `npm run verify` passes on the exact final commit and public CI.
 - [x] `uv run gatehold init` succeeds from a fresh state directory.
 - [x] `uv run gatehold demo` emits its documented synthetic grant/hold baseline
   without a key.
@@ -58,6 +60,8 @@ The official rules and Devpost site override this checklist.
 - [x] A held/waiting task cannot start its controlled command.
 - [x] HTTP cannot execute arbitrary commands.
 - [x] CLI child execution uses `shell=False`.
+- [x] Governed children receive a minimal environment; bounded `--pass-env`
+  rejects credential and known runtime-injection names before admission.
 - [x] Missing/failed/invalid GPT-5.6 cannot weaken local policy.
 - [x] Model output cannot grant or restore clearance.
 - [x] Estimates are visibly labeled.
@@ -116,7 +120,9 @@ The official rules and Devpost site override this checklist.
 - [x] State that public data is replay.
 - [x] Use only owned/authorized visuals and audio.
 - [x] Export at readable resolution and verify terminal text on mobile.
-- [x] Watch the uploaded YouTube version from start to finish.
+- [x] Review the replacement local render and contact sheet from start to
+      finish.
+- [ ] Watch the uploaded replacement YouTube version from start to finish.
 
 ## Devpost copy
 
@@ -124,7 +130,8 @@ The official rules and Devpost site override this checklist.
 - [x] Tagline: “Local air-traffic control for coding agents.”
 - [x] Category: Developer Tools.
 - [ ] Paste and proofread `docs/SUBMISSION.md`.
-- [x] Public URL, repo URL, YouTube URL, and session ID match this revision.
+- [ ] Public URL, repo URL, replacement YouTube URL, and session ID match the
+      final revision.
 - [x] Testing instructions require no paid account or secret.
 - [x] Pre-existing-work disclosure is included, not only in the repo.
 - [x] Distinction from ProofLatch is included and accurate.
@@ -142,50 +149,62 @@ The official rules and Devpost site override this checklist.
 
 ## Final evidence block
 
-Complete this immediately before submission:
+Replace every pending field immediately before submission:
 
 ```text
-Final validated executable source:
-b530fa173fa526bda0574c218fa700f6902bb00d
+Candidate state:
+Local reviewed release candidate; final commit, push, merge, and public CI are
+pending the explicit external-release approval boundary.
 
-npm run verify:
-PASS — local tree, fresh clone, and public GitHub Actions run
-https://github.com/pakales/gatehold/actions/runs/29735811254
+Local release gate:
+PASS — 246 Python tests + 3 Node web tests, Ruff, Pyright, TypeScript, ESLint,
+privacy/link checks, production build, dependency audit, CLI lifecycle smoke,
+governed interruption cleanup, and bounded live GPT-5.6 smoke.
 
-Public demo:
+Replacement video QA:
+PASS — 171.021333s; 1920x1080; H.264/yuv420p/30; AAC/48kHz/stereo;
+-15.89 LUFS; -4.45 dBTP; exact 9-shot captions; 0 decode errors.
+SHA-256:
+b96573b39f32eb01cee855057ff6a5a5aabc75212aa06d0c85f481fb6ecb3c15
+
+Current public baseline demo:
 https://gatehold-buildweek.e-vigelis.chatgpt.site
-Deployment route: pushed green main → saved Sites version → production.
-Exact source provenance is retained by Sites.
+Final candidate deployment: PENDING
 
 Public repository:
 https://github.com/pakales/gatehold
 
-Public YouTube video:
-https://youtu.be/QBdzI0hqTQY — Public, 2:51
+Replacement public YouTube video:
+PENDING — do not submit the superseded https://youtu.be/QBdzI0hqTQY render
 
 Codex /feedback session:
 019f7221-2421-78e3-b12e-f6082da1ed87
 
-Anonymous checks — 2026-07-20 12:33 EEST:
-Demo HTTP 200; final headline and REPLAY boundary present; A→D interaction
-finished on Clean finish; desktop/mobile had no console errors or overflow.
-Repository and raw MIT LICENSE HTTP 200; public label present.
-YouTube oEmbed HTTP 200 with the expected title and EV1 Labs author.
+Final validated executable source:
+PENDING
+
+Final GitHub Actions run:
+PENDING
+
+Final anonymous checks:
+PENDING — exact Sites candidate, repository revision, replacement YouTube
+playback, and Devpost links must all be checked signed out.
 
 Devpost:
-Not submitted yet — final form/CAPTCHA remains the only external gate.
+PENDING — not submitted.
 
 Skipped:
-No source, build, dependency, installer, local-daemon, model, UI, or public-link
-check was skipped. Custom YouTube thumbnail remains unavailable until the
-channel completes YouTube phone verification and does not block eligibility.
+No local source, build, dependency, installer, daemon, model, UI, media, or
+privacy check was skipped. Exact public-release checks remain intentionally
+pending until publication.
 
 Residual risk:
 Gatehold coordinates opt-in cooperative clients, not unmanaged processes.
 vinext still emits an upstream Node punycode deprecation warning while the
-build succeeds. The published video retains the aspirational closing phrase
-"Zero collisions"; the narration limits the claim to cooperative agents, and
-all site/submission copy uses the qualified "One clearance layer" wording.
+build succeeds. GitHub branch protection, vulnerability alerts, final Sites
+deployment, replacement YouTube publication, and Devpost submission remain
+external release actions. The older public video must not be used in the final
+Gatehold submission.
 ```
 
 ## Stop boundaries
