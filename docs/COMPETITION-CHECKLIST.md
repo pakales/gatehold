@@ -146,11 +146,11 @@ Complete this immediately before submission:
 
 ```text
 Final validated executable source:
-abc2782cb77b5e7940ddab86f78e7d0888b6d20c
+b530fa173fa526bda0574c218fa700f6902bb00d
 
 npm run verify:
 PASS — local tree, fresh clone, and public GitHub Actions run
-https://github.com/pakales/gatehold/actions/workflows/ci.yml?query=branch%3Amain
+https://github.com/pakales/gatehold/actions/runs/29735811254
 
 Public demo:
 https://gatehold-buildweek.e-vigelis.chatgpt.site

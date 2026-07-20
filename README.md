@@ -373,9 +373,9 @@ The primary Codex `/feedback` session ID is
 `019f7221-2421-78e3-b12e-f6082da1ed87`. Dated public commit links are recorded
 in [Devpost Submission Copy](docs/SUBMISSION.md). The final executable source
 revision is
-[`abc2782cb77b5e7940ddab86f78e7d0888b6d20c`](https://github.com/pakales/gatehold/commit/abc2782cb77b5e7940ddab86f78e7d0888b6d20c);
+[`b530fa173fa526bda0574c218fa700f6902bb00d`](https://github.com/pakales/gatehold/commit/b530fa173fa526bda0574c218fa700f6902bb00d);
 it passed the complete public
-[Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29731214328).
+[Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29735811254).
 
 ## Repository map
 
