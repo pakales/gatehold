@@ -64,7 +64,7 @@ that a process belongs to it.
 | Judge question | Inspectable evidence |
 | --- | --- |
 | Is this more than a UI concept? | A Python daemon, transactional SQLite admission engine, CLI, process supervisor, React control desk, and reusable Codex skill are all in this repository. |
-| Is the core behavior exercised? | The current release gate collects 155 Python contract cases and three Node web contract tests, then runs strict Python/TypeScript checks and a production build. |
+| Is the core behavior exercised? | The current release gate collects 246 Python contract cases and three Node web contract tests, then runs strict Python/TypeScript checks and a production build. |
 | Does cleanup work on a real machine? | A recorded disposable macOS Simulator smoke reached `boot_intent -> owned -> cleaned`, confirmed shutdown, and finished with zero allocations and zero booted simulators. |
 | Can a judge see the product quickly? | The public, no-account [90-second replay](https://gatehold-buildweek.e-vigelis.chatgpt.site) demonstrates admission, semantic hold, FIFO capacity waiting, runtime ownership, and verified clean finish. |
 | Can GPT-5.6 take control? | No. Its strict output can only add a semantic hold; deterministic conflict, capacity, ownership, and release decisions stay outside the model schema. |
@@ -159,14 +159,19 @@ uv run gatehold daemon \
   --dashboard-origin http://127.0.0.1:3001
 ```
 
+Then open that loopback URL with the explicit operator flag, for example
+`http://127.0.0.1:3001/?local=1`, and select **Local mode**. The public Sites
+replay never probes a visitor's `127.0.0.1`; its Local mode control only
+explains how to enter the private loopback surface.
+
 Every browser origin, including localhost, is denied unless it was explicitly
 passed with `--dashboard-origin` or configured as the same exact value in
 `GATEHOLD_DASHBOARD_ORIGINS`. Local loopback origins may use HTTP; any
 non-loopback origin must use HTTPS. Public HTTP and wildcard origins are never
-allowed. Chrome 142 and later may also show its
+allowed. A supported browser may also show its
 [Local Network Access permission](https://developer.chrome.com/blog/local-network-access)
-when a public page intentionally checks `127.0.0.1`; grant it only when using
-**Live local**.
+when the private local operator surface intentionally checks `127.0.0.1`;
+grant it only when using **Live local**.
 
 ### Run with an owned clean finish
 
@@ -183,6 +188,29 @@ uv run gatehold run \
   --wait-timeout 0 \
   -- /usr/bin/true
 ```
+
+A governed command does not inherit the operator's full environment. Gatehold
+constructs a small runtime-compatible allowlist, adds only its claim-bound
+allocation and provenance values, and removes ambient credentials by default.
+If a tool needs a non-secret setting, pass its name explicitly and repeat the
+flag as needed:
+
+```bash
+uv run gatehold run \
+  --owner judge-smoke \
+  --workstream judge/cache-smoke \
+  --scope demo/cache-smoke \
+  --light \
+  --no-semantic \
+  --pass-env UV_CACHE_DIR \
+  -- uv --version
+```
+
+`--pass-env` accepts at most 32 valid, present, non-protected variable names.
+Missing names, credential-like names, Gatehold controls, and known
+interpreter/startup injection variables fail before a claim is created. This
+limits accidental environment leakage; it is not a sandbox for the selected
+program or file-based credentials the program can read.
 
 A governed command runs in a private process group. Gatehold records bounded
 provenance for that group and any allocated port or dedicated browser-profile
@@ -315,6 +343,9 @@ non-claims.
 - The OpenAI API call uses `store=False`.
 - The browser never receives `OPENAI_API_KEY`.
 - The HTTP API never accepts an arbitrary command to execute.
+- Governed commands receive a minimal child environment instead of inheriting
+  ambient secrets. Optional `--pass-env NAME` values are bounded and reject
+  protected credential or runtime-injection names before admission.
 - Governed commands run in a private process group. Cleanup signals only a
   group whose persisted PID, process-group/session identity, boot time, process
   create time, and secret-derived provenance still match.
@@ -341,9 +372,10 @@ Gatehold is entered in the **Developer Tools** category of OpenAI Build Week.
 The clean Gatehold repository and its generalized public implementation were
 created during the submission period.
 
-Private EVL Labs workstation prototypes also existed during the submission
-period before this public repository was assembled. Gatehold reuses these
-concepts, not their private source code:
+Private EVL Labs workstation-coordination prototypes predated the Submission
+Period start on July 13, 2026 at 09:00 PT. This clean public Gatehold repository
+was assembled during the Submission Period and reuses these concepts, not
+their private source code:
 
 | Reused concept | New Gatehold implementation |
 | --- | --- |
@@ -371,11 +403,20 @@ documentation, and Codex skill.
 
 The primary Codex `/feedback` session ID is
 `019f7221-2421-78e3-b12e-f6082da1ed87`. Dated public commit links are recorded
-in [Devpost Submission Copy](docs/SUBMISSION.md). The final executable source
-revision is
+in [Devpost Submission Copy](docs/SUBMISSION.md). This long-running Codex task
+contains an earlier, separate ProofLatch workstream before the explicit pivot
+to Gatehold; the shared task ID records thread continuity, while the products
+share no source code and the dated Gatehold commits isolate this implementation.
+
+The last published, fully validated baseline before the final hardening pass is
 [`b530fa173fa526bda0574c218fa700f6902bb00d`](https://github.com/pakales/gatehold/commit/b530fa173fa526bda0574c218fa700f6902bb00d);
 it passed the complete public
 [Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29735811254).
+The final validated executable source is
+[`ba54c575ca510c2ec04bd372392c163fc10099b7`](https://github.com/pakales/gatehold/commit/ba54c575ca510c2ec04bd372392c163fc10099b7),
+which passed the exact public
+[Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29749328675),
+including the release contract and dependency audit.
 
 ## Repository map
 

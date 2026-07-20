@@ -75,11 +75,11 @@
     },
     {
       "id": "S09",
-      "title": "No pile-up",
+      "title": "One clearance layer",
       "durationSeconds": 15,
       "visual": "media/stills/scene-d-release.png",
       "motion": "push-in",
-      "narration": "Gatehold gives cooperative agents a simple rule: one owner, one isolated runtime lane, owned cleanup at the finish, and no heavy start without clearance. One machine. Many agents. Zero collisions."
+      "narration": "Gatehold gives cooperative agents a simple rule: one owner, one isolated runtime lane, owned cleanup at the finish, and no heavy start without clearance. One machine. Many agents. One clearance layer."
     }
   ]
 }

@@ -30,7 +30,7 @@ from .models import (
     ResourceRequest,
     WorkloadClass,
 )
-from .privacy import new_secret
+from .privacy import new_secret, safe_child_environment
 from .security import ensure_daemon_token
 from .semantic import OpenAISemanticComparator
 from .store import secure_state_permissions
@@ -97,6 +97,13 @@ def build_parser() -> argparse.ArgumentParser:
         "argv",
         nargs=argparse.REMAINDER,
         help="command after --",
+    )
+    run.add_argument(
+        "--pass-env",
+        action="append",
+        default=[],
+        metavar="NAME",
+        help="pass one validated non-secret environment variable to the command",
     )
 
     subparsers.add_parser("demo", help="run a bounded synthetic replay demo")
@@ -286,6 +293,10 @@ def _run_managed(config: GateholdConfig, arguments: argparse.Namespace) -> int:
         raise ValueError("--wait-timeout must be non-negative")
     if arguments.poll_interval <= 0 or arguments.poll_interval > 30:
         raise ValueError("--poll-interval must be greater than 0 and at most 30")
+    child_environment = safe_child_environment(
+        os.environ,
+        pass_names=arguments.pass_env,
+    )
 
     service = _claim_service(config, no_semantic=arguments.no_semantic)
     request = _claim_request(arguments)
@@ -312,13 +323,6 @@ def _run_managed(config: GateholdConfig, arguments: argparse.Namespace) -> int:
         return HOLD_EXIT
 
     lease = outcome.lease
-    child_environment = os.environ.copy()
-    for secret_name in (
-        "OPENAI_API_KEY",
-        "GATEHOLD_QUEUE_TOKEN",
-        "GATEHOLD_HEARTBEAT_TOKEN",
-    ):
-        child_environment.pop(secret_name, None)
     if lease.resources.port is not None:
         child_environment["GATEHOLD_PORT"] = str(lease.resources.port)
     if lease.resources.browser_profile is not None:

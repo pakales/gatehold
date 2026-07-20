@@ -42,6 +42,9 @@ system permissions, endpoint security, containers, or virtual machines.
 - Do not persist source, diffs, conversations, or command arguments.
 - Never accept an arbitrary command through HTTP.
 - Execute CLI commands with `shell=False`.
+- Do not copy the ambient operator environment into governed commands; reject
+  credential, Gatehold-control, and known interpreter/startup injection names
+  requested through bounded `--pass-env`.
 - Never let model output grant clearance or override local policy.
 - Use TTL, opaque heartbeat token, release, and expiry for every lease.
 - Preserve exclusive ownership of each named runtime resource.
@@ -74,11 +77,16 @@ shell text.
 
 **Mitigations:** HTTP is strictly read-only and has no claim, lease-mutation, or
 arbitrary-command operation. Only the CLI starts child processes, using an
-argument vector and `shell=False`. Claim metadata and model output remain data.
+argument vector and `shell=False`. The child receives a minimal
+runtime-compatible environment, not an ambient environment copy. Explicit
+`--pass-env` requests are bounded and reject credential-like names,
+Gatehold-control names, and known interpreter/startup injection names before
+claim creation. Claim metadata and model output remain data.
 
 **Residual risk:** The local operator can intentionally select a dangerous
-executable. Gatehold controls admission, not the safety of the requested
-program.
+executable or a non-protected setting that changes tool behavior. The selected
+program can also read same-user files. Gatehold controls admission and limits
+accidental environment leakage; it is not a program sandbox.
 
 ### T3: Model authority escalation
 
@@ -97,11 +105,15 @@ availability failure, but it may delay work.
 **Threat:** Source, diffs, credentials, private prompts, or unrestricted process
 data enter the API call or model prose enters logs.
 
-**Mitigations:** Send bounded claim metadata only, use `store=False`, bound
-output, avoid raw model prose in receipts, and keep the key server-only.
+**Mitigations:** Send bounded claim metadata only; redact home paths, emails,
+common provider tokens, JWTs, credential assignments, and high-confidence
+contextual bearer/API/access secrets before path normalization; use
+`store=False`; bound output; avoid raw model prose in receipts; and keep the
+key server-only.
 
-**Residual risk:** Operators may place sensitive content in a workstream name
-or scope summary. Documentation instructs them not to.
+**Residual risk:** Pattern filtering is not general DLP. An unknown or
+unstructured secret may survive, so operators must not place sensitive content
+in a workstream name or scope summary.
 
 ### T5: Lease theft or accidental release
 
@@ -185,8 +197,10 @@ Validate loopback `Host`. Accept tokenless browser access only from exact
 configured origins, require HTTPS for non-loopback origins, echo the exact CORS
 origin without wildcard/credentials, and require a bearer token for
 origin-less `/v1/*` clients. An arbitrary localhost development server is not
-implicitly trusted. Never put the token in a URL, query, Sites configuration,
-or browser storage.
+implicitly trusted. The dashboard attempts a local connection only from an
+HTTP loopback URL carrying the explicit `?local=1` operator flag; the public
+replay does not probe `127.0.0.1`. Never put the token in a URL, query, Sites
+configuration, or browser storage.
 
 **Residual risk:** Loopback services are discoverable, and a malicious process
 under the same OS user may read the token. A future remote-capable dashboard

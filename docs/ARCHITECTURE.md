@@ -51,6 +51,10 @@ release, governed run, daemon, and bounded demo operations. It:
 - validates arguments before invoking the local service;
 - starts commands only after clearance;
 - uses argument arrays with `shell=False`;
+- constructs a minimal child environment instead of copying the operator's
+  full environment; bounded `--pass-env NAME` requests reject credential,
+  Gatehold-control, and known interpreter/startup injection names before
+  admission;
 - heartbeats active work;
 - supervises governed commands in a private process group;
 - requests cleanup after normal completion, interruption, heartbeat loss, or
@@ -226,7 +230,10 @@ The same product language supports two distinct modes:
   fixture under `fixtures/demo/`. It works publicly and requires no access to
   the viewer's computer.
 - **Live local** reads the loopback daemon on the same workstation. It shows
-  only local Gatehold state and current bounded host signals.
+  only local Gatehold state and current bounded host signals. The dashboard
+  attempts this connection only on an HTTP loopback URL carrying the explicit
+  `?local=1` operator flag; the public replay never probes a visitor's
+  workstation.
 
 The mode label is part of the trust boundary. A replay must never be presented
 as live telemetry. Every dashboard origin, including local development, works

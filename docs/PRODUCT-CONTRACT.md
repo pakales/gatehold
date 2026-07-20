@@ -95,7 +95,9 @@ access to live workstation state.
     An unresolved `boot_intent` is quarantined with zero guessed shutdown.
 17. Physical Apple Simulator lifecycle is macOS-only through `xcrun simctl`.
 18. Commands run only from the local CLI as an argument vector with
-    `shell=False`.
+    `shell=False` and a minimal child environment. Optional bounded
+    `--pass-env` requests reject credential, Gatehold-control, and known
+    interpreter/startup injection names before admission.
 19. The HTTP API never accepts arbitrary commands.
 20. The daemon binds to `127.0.0.1` by default.
 21. Secrets never enter browser bundles, fixtures, receipts, logs, or git.

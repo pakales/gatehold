@@ -15,20 +15,12 @@ import {
   Radio,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
   Unplug,
   Users,
   X,
   Zap,
 } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const DAEMON_ORIGIN = "http://127.0.0.1:47820";
 const DEMO_STEP_MS = 2800;
@@ -74,6 +66,7 @@ type DemoScene = {
   summary: string;
   verdict: "CLEARED" | "HOLD" | "RELEASED";
   verdictTone: Tone;
+  focusLaneIndex: number;
   host: HostSnapshot;
   lanes: readonly Lane[];
   events: readonly {
@@ -110,6 +103,7 @@ const demoScenes: readonly DemoScene[] = [
       "Agent 07 owns auth/session and the host has room. The task enters an isolated runtime lane.",
     verdict: "CLEARED",
     verdictTone: "mint",
+    focusLaneIndex: 0,
     host: {
       cpu: 38,
       ram: 52,
@@ -189,6 +183,7 @@ const demoScenes: readonly DemoScene[] = [
       "Agent 18 asks to “harden session renewal.” GPT-5.6 raises a conservative review hold; deterministic policy remains authoritative.",
     verdict: "HOLD",
     verdictTone: "coral",
+    focusLaneIndex: 1,
     host: {
       cpu: 44,
       ram: 56,
@@ -268,6 +263,7 @@ const demoScenes: readonly DemoScene[] = [
       "The archive does not overlap, but memory pressure is high and both heavy slots are occupied. It waits in FIFO order.",
     verdict: "HOLD",
     verdictTone: "amber",
+    focusLaneIndex: 2,
     host: {
       cpu: 86,
       ram: 91,
@@ -347,6 +343,7 @@ const demoScenes: readonly DemoScene[] = [
       "Agent 12 finishes and returns its heavy slot. Gatehold later cleans only an exact runtime it booted and confirmed; prebooted human simulators stay untouched.",
     verdict: "RELEASED",
     verdictTone: "mint",
+    focusLaneIndex: 1,
     host: {
       cpu: 61,
       ram: 68,
@@ -428,7 +425,7 @@ const liveCopy: Record<LiveState, { label: string; description: string }> = {
   live: { label: "Live", description: "Read-only daemon snapshot" },
   blocked: {
     label: "Blocked",
-    description: "Allow local access · allowlist this origin",
+    description: "Private loopback mode only",
   },
   offline: {
     label: "Offline",
@@ -439,7 +436,7 @@ const liveCopy: Record<LiveState, { label: string; description: string }> = {
 const boundaryCopy: Record<LiveState, { title: string; detail: string }> = {
   replay: {
     title: "REPLAY HOST METRICS · REPLAY SCENARIO",
-    detail: "All values below are bounded demo data.",
+    detail: "Bounded demo data.",
   },
   checking: {
     title: "CHECKING LOCAL HOST · REPLAY SCENARIO",
@@ -451,7 +448,8 @@ const boundaryCopy: Record<LiveState, { title: string; detail: string }> = {
   },
   blocked: {
     title: "LOCAL ACCESS BLOCKED · REPLAY SCENARIO",
-    detail: "Grant browser local access and allowlist this exact origin.",
+    detail:
+      "Use the documented loopback operator URL and allowlist its exact origin.",
   },
   offline: {
     title: "LOCAL HOST OFFLINE · REPLAY SCENARIO",
@@ -467,7 +465,7 @@ const footerCopy: Record<LiveState, string> = {
   live:
     "LIVE HOST METRICS · A–D lanes and events remain bounded replay data.",
   blocked:
-    "LOCAL ACCESS BLOCKED · A–D replay remains active; grant browser local access and allowlist this exact origin.",
+    "LOCAL MODE OFF · A–D replay remains active; private access requires the documented loopback URL and exact-origin allowlist.",
   offline:
     "LOCAL HOST OFFLINE · A–D replay remains active with bounded demo data.",
 };
@@ -476,6 +474,19 @@ function clampMetric(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value)
     ? Math.max(0, Math.min(100, Math.round(value)))
     : fallback;
+}
+
+function isLocalOperatorSurface(): boolean {
+  const currentUrl = new URL(window.location.href);
+  const isLoopback =
+    currentUrl.hostname === "127.0.0.1" ||
+    currentUrl.hostname === "localhost" ||
+    currentUrl.hostname === "[::1]";
+  return (
+    currentUrl.protocol === "http:" &&
+    isLoopback &&
+    currentUrl.searchParams.get("local") === "1"
+  );
 }
 
 function StatusMark({ state }: { state: KeyState }) {
@@ -501,6 +512,26 @@ function ClearanceCell({
         <strong>{clearance.label}</strong>
       </span>
     </div>
+  );
+}
+
+function DecisionKey({
+  kind,
+  clearance,
+}: {
+  kind: string;
+  clearance: Lane["workstream"];
+}) {
+  return (
+    <span className={`decision-key key-${clearance.state}`}>
+      <span className="decision-key-icon">
+        <StatusMark state={clearance.state} />
+      </span>
+      <span>
+        <small>{kind}</small>
+        <strong>{clearance.label}</strong>
+      </span>
+    </span>
   );
 }
 
@@ -551,6 +582,7 @@ export function GateholdDashboard() {
     useState<LocalDaemonSnapshot | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const scene = demoScenes[sceneIndex];
+  const focusLane = scene.lanes[scene.focusLaneIndex] ?? scene.lanes[0];
   const modeCopy = liveCopy[liveState];
   const sourceBoundary = boundaryCopy[liveState];
   const isLiveHost = liveState === "live";
@@ -590,6 +622,11 @@ export function GateholdDashboard() {
 
   const connectLocal = useCallback(async () => {
     if (liveState === "checking") return;
+    if (!isLocalOperatorSurface()) {
+      setLocalSnapshot(null);
+      setLiveState("blocked");
+      return;
+    }
     setLiveState("checking");
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 1800);
@@ -603,21 +640,8 @@ export function GateholdDashboard() {
           signal: controller.signal,
         });
       } catch {
-        try {
-          await fetch(`${DAEMON_ORIGIN}/healthz`, {
-            method: "GET",
-            mode: "no-cors",
-            cache: "no-store",
-            credentials: "omit",
-            signal: controller.signal,
-          });
-          // Opaque success proves only that loopback replied, never health or identity.
-          setLocalSnapshot(null);
-          setLiveState("blocked");
-        } catch {
-          setLocalSnapshot(null);
-          setLiveState("offline");
-        }
+        setLocalSnapshot(null);
+        setLiveState("offline");
         return;
       }
       if (health.status === 401 || health.status === 403) {
@@ -703,7 +727,9 @@ export function GateholdDashboard() {
   }
 
   return (
-    <main className="gatehold-shell">
+    <main
+      className={`gatehold-shell${isRunning ? " demo-running" : ""}`}
+    >
       <div className="ambient-grid" aria-hidden="true" />
       <header className="topbar">
         <a className="brand" href="#control-deck" aria-label="Gatehold home">
@@ -724,26 +750,6 @@ export function GateholdDashboard() {
         </div>
         <div className="header-actions">
           <button
-            className="button button-quiet"
-            type="button"
-            onClick={() => void connectLocal()}
-            disabled={liveState === "checking"}
-            aria-label={
-              liveState === "live"
-                ? "Refresh local daemon"
-                : "Check local daemon"
-            }
-          >
-            {liveState === "checking" ? (
-              <RefreshCw aria-hidden="true" size={15} className="spin" />
-            ) : liveState === "live" ? (
-              <Radio aria-hidden="true" size={15} />
-            ) : (
-              <Unplug aria-hidden="true" size={15} />
-            )}
-            <span>{liveState === "live" ? "Refresh local" : "Check local"}</span>
-          </button>
-          <button
             className="button button-primary"
             type="button"
             onClick={runDemo}
@@ -754,63 +760,138 @@ export function GateholdDashboard() {
             ) : (
               <Play aria-hidden="true" size={16} fill="currentColor" />
             )}
-            <span>{isRunning ? "Playing clearance…" : "Play 4-step demo"}</span>
+            <span className="button-label-full">
+              {isRunning ? "Playing clearance…" : "Play 4-step demo"}
+            </span>
+            <span className="button-label-short">
+              {isRunning ? "Playing…" : "Play demo"}
+            </span>
           </button>
         </div>
       </header>
 
-      <section className="intro" aria-labelledby="control-deck">
-        <div>
+      <section
+        className={`hero-stage hero-${scene.verdictTone}`}
+        aria-labelledby="control-deck"
+      >
+        <div className="intro">
           <p className="eyebrow">
             <CircleDot aria-hidden="true" size={13} />
             Local clearance for parallel coding agents
           </p>
           <h1 id="control-deck">
-            One machine. Many agents.
-            <span> One clearance layer.</span>
+            <span className="headline-main">One machine.</span>
+            <span className="headline-main">Many agents.</span>
+            <span className="headline-accent">One clearance layer.</span>
           </h1>
-        </div>
-        <div className="intro-note">
-          <strong className="product-contract">
-            Two keys to start. Verified cleanup to release.
-          </strong>
-          <p>
-            Gatehold blocks overlapping work, queues heavy jobs when the host
-            is full, and releases a lane only after owned cleanup is verified.
-          </p>
-          <div className="authority-rule">
-            <ShieldCheck aria-hidden="true" size={17} />
-            <span>
-              <strong>Deterministic policy grants clearance.</strong>
-              <small>GPT-5.6 can only add a hold.</small>
-            </span>
+          <div className="intro-note">
+            <strong className="product-contract">
+              Two keys to start. Verified cleanup to release.
+            </strong>
+            <p>
+              Gatehold blocks overlapping work, queues heavy jobs when the host
+              is full, and releases a lane only after owned cleanup is verified.
+            </p>
+            <div className="authority-rule">
+              <ShieldCheck aria-hidden="true" size={17} />
+              <span>
+                <strong>Deterministic policy grants clearance.</strong>
+                <small>
+                  {
+                    "GPT-5.6 can only add a hold. It never grants clearance or overrides deterministic policy."
+                  }
+                </small>
+              </span>
+            </div>
           </div>
         </div>
-      </section>
 
-      <section
-        className={`decision-deck decision-${scene.verdictTone}`}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <div className="decision-signal">
-          <span>Now · Scene {scene.step}</span>
-          <strong>{scene.verdict}</strong>
-        </div>
-        <div className="decision-copy">
-          <h2>{scene.title}</h2>
-          <p>{scene.summary}</p>
-        </div>
-        <div className="decision-contract" aria-label="Gatehold two-key rule">
-          <span>
-            <small>Key 01</small>
-            <strong>Workstream owner</strong>
-          </span>
-          <span>
-            <small>Key 02</small>
-            <strong>Host capacity</strong>
-          </span>
-        </div>
+        <section
+          className={`decision-deck decision-${scene.verdictTone}`}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div className="decision-signal">
+            <span>Clearance decision · Scene {scene.step}</span>
+            <strong>{scene.verdict}</strong>
+          </div>
+          <div className="decision-copy">
+            <span className="decision-agent">
+              {focusLane.agent} · {focusLane.weight} lane
+            </span>
+            <h2>{scene.title}</h2>
+            <p>{scene.summary}</p>
+          </div>
+          <div className="decision-contract" aria-label="Gatehold two-key rule">
+            <DecisionKey
+              kind={
+                scene.verdict === "RELEASED"
+                  ? "Cleanup receipt"
+                  : "Workstream key"
+              }
+              clearance={focusLane.workstream}
+            />
+            <DecisionKey
+              kind={
+                scene.verdict === "RELEASED"
+                  ? "Capacity return"
+                  : "Capacity key"
+              }
+              clearance={focusLane.capacity}
+            />
+          </div>
+        </section>
+
+        <section className="scenario-console" aria-label="Demo controls">
+          <div className="source-rail">
+            <div
+              className={`source-boundary source-boundary-${liveState}`}
+              role="status"
+              aria-live="polite"
+            >
+              <Radio aria-hidden="true" size={13} />
+              <strong>{sourceBoundary.title}</strong>
+              <span>{sourceBoundary.detail}</span>
+            </div>
+            <button
+              className="local-mode-control"
+              type="button"
+              onClick={() => void connectLocal()}
+              disabled={liveState === "checking"}
+              aria-label={
+                liveState === "live"
+                  ? "Refresh private local daemon"
+                  : "Check private local daemon"
+              }
+              title="Private loopback mode requires ?local=1 and an exact-origin allowlist"
+            >
+              {liveState === "checking" ? (
+                <RefreshCw aria-hidden="true" size={14} className="spin" />
+              ) : liveState === "live" ? (
+                <Radio aria-hidden="true" size={14} />
+              ) : (
+                <Unplug aria-hidden="true" size={14} />
+              )}
+              <span>{liveState === "live" ? "Refresh local" : "Local mode"}</span>
+            </button>
+          </div>
+
+          <nav className="scene-switcher" aria-label="Collision demo scenes">
+            {demoScenes.map((demoScene, index) => (
+              <button
+                key={demoScene.id}
+                type="button"
+                className={`${index === sceneIndex ? "scene-active " : ""}scene-${demoScene.verdictTone}`}
+                aria-current={index === sceneIndex ? "step" : undefined}
+                aria-label={`Scene ${demoScene.step}: ${demoScene.shortLabel}`}
+                onClick={() => selectScene(index)}
+              >
+                <span>{demoScene.step}</span>
+                <strong>{demoScene.shortLabel}</strong>
+              </button>
+            ))}
+          </nav>
+        </section>
       </section>
 
       <section
@@ -852,85 +933,7 @@ export function GateholdDashboard() {
         />
       </section>
 
-      <div
-        className={`source-boundary source-boundary-${liveState}`}
-        role="status"
-        aria-live="polite"
-      >
-        <Radio aria-hidden="true" size={13} />
-        <strong>{sourceBoundary.title}</strong>
-        <span>{sourceBoundary.detail}</span>
-      </div>
-
-      <nav className="scene-switcher" aria-label="Collision demo scenes">
-        {demoScenes.map((demoScene, index) => (
-          <button
-            key={demoScene.id}
-            type="button"
-            className={index === sceneIndex ? "scene-active" : ""}
-            aria-current={index === sceneIndex ? "step" : undefined}
-            aria-label={`Scene ${demoScene.step}: ${demoScene.shortLabel}`}
-            onClick={() => selectScene(index)}
-          >
-            <span>{demoScene.step}</span>
-            <strong>{demoScene.shortLabel}</strong>
-          </button>
-        ))}
-      </nav>
-
       <section className="control-grid">
-        <article className="panel radar-panel" aria-labelledby="host-core-title">
-          <div className="panel-heading">
-            <div>
-              <p className="panel-kicker">Deterministic policy</p>
-              <h2 id="host-core-title">Clearance decision</h2>
-            </div>
-            <span className={`verdict verdict-${scene.verdictTone}`}>
-              {scene.verdict}
-            </span>
-          </div>
-          <div
-            className={`radar-stage radar-${scene.verdictTone}`}
-            aria-label={`Clearance radar. ${scene.title}`}
-          >
-            <div className="radar-ring ring-one" aria-hidden="true" />
-            <div className="radar-ring ring-two" aria-hidden="true" />
-            <div className="radar-ring ring-three" aria-hidden="true" />
-            <div className="radar-axis axis-x" aria-hidden="true" />
-            <div className="radar-axis axis-y" aria-hidden="true" />
-            <div className="radar-sweep" aria-hidden="true" />
-            <div className="trajectory trajectory-a" aria-hidden="true" />
-            <div className="trajectory trajectory-b" aria-hidden="true" />
-            <div className="trajectory trajectory-c" aria-hidden="true" />
-            {scene.lanes.map((lane, index) => (
-              <div
-                key={lane.id}
-                className={`radar-contact contact-${index + 1} contact-${lane.tone}`}
-                style={{ "--contact-index": index } as CSSProperties}
-                aria-hidden="true"
-              >
-                <span />
-              </div>
-            ))}
-            <div className="host-core">
-              <span className="host-core-icon">
-                <ShieldCheck aria-hidden="true" size={27} />
-              </span>
-              <small>HOST CORE</small>
-              <strong>{displayHost.cpu}%</strong>
-              <span>CPU</span>
-            </div>
-          </div>
-          <div className="model-boundary">
-            <Sparkles aria-hidden="true" size={15} />
-            <p>
-              <strong>GPT-5.6 safe boundary</strong>
-              May raise a semantic hold. It never grants clearance or overrides
-              a deterministic lease.
-            </p>
-          </div>
-        </article>
-
         <section className="lanes-column" aria-labelledby="agent-lanes-title">
           <div className="section-heading">
             <div>
@@ -944,7 +947,9 @@ export function GateholdDashboard() {
           <div className="lane-list">
             {scene.lanes.map((lane, index) => (
               <article
-                className={`lane-card lane-${lane.tone}`}
+                className={`lane-card lane-${lane.tone}${
+                  index === scene.focusLaneIndex ? " lane-focus" : ""
+                }`}
                 key={`${scene.id}-${lane.id}`}
               >
                 <div className="lane-index" aria-hidden="true">

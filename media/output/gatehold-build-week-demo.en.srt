@@ -32,4 +32,4 @@ The public dashboard is a labeled synthetic replay. Live local mode reads only t
 
 9
 00:02:36,000 --> 00:02:51,000
-Gatehold gives cooperative agents a simple rule: one owner, one isolated runtime lane, owned cleanup at the finish, and no heavy start without clearance. One machine. Many agents. Zero collisions.
+Gatehold gives cooperative agents a simple rule: one owner, one isolated runtime lane, owned cleanup at the finish, and no heavy start without clearance. One machine. Many agents. One clearance layer.

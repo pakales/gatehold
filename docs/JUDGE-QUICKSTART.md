@@ -76,6 +76,12 @@ child's immediate cleanup is partial or ambiguous, the governed run returns
 `72` instead of reporting clean success; any unresolved conflict stays
 quarantined until reconciliation completes it.
 
+The child receives a minimal environment rather than the operator's full
+environment. If this smoke needs a non-secret tool setting, add a repeated
+`--pass-env NAME` before `--`; protected, missing, invalid, or known
+interpreter/startup injection names are rejected before Gatehold creates a
+claim.
+
 This example intentionally leaves the temporary state directory available for
 inspection. It contains no API key; remove it after review using the
 operator's normal file workflow.
@@ -146,15 +152,17 @@ uv run gatehold daemon --dashboard-origin "$dashboard_origin"
 ```
 
 Replace the example with the exact printed origin; a different localhost host
-or port is a different origin. Select **Live local** only after this restart.
+or port is a different origin. Open that origin with the explicit operator
+flag, for example `http://127.0.0.1:3001/?local=1`, then select **Local mode**.
+The public Sites replay never probes a visitor's loopback service.
 No browser origin, including loopback, is trusted implicitly. Local loopback
 origins may use HTTP; non-loopback origins must use HTTPS. Public HTTP,
 wildcards, and credentialed CORS are not allowed. If the browser cannot reach
 the daemon, the UI should show a truthful disconnected state; switch back to
-Replay to continue testing. Chrome 142 and later may first ask for
+Replay to continue testing. A supported browser may first ask for
 [Local Network Access permission](https://developer.chrome.com/blog/local-network-access)
-when the public site checks `127.0.0.1`; grant it only for this intentional
-Live-local path.
+when this private operator surface checks `127.0.0.1`; grant it only for this
+intentional Live-local path.
 
 ### Run the complete verification gate
 

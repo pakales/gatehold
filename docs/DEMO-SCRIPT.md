@@ -123,7 +123,7 @@ next lane, then end on the Gatehold wordmark.
 
 > Gatehold gives cooperative agents a simple rule: one owner, one isolated
 > runtime lane, owned cleanup at the finish, and no heavy start without
-> clearance. One machine. Many agents. Zero collisions.
+> clearance. One machine. Many agents. One clearance layer.
 
 ## Story contract
 
@@ -145,14 +145,17 @@ The video must preserve these boundaries:
 
 ## Final QA checklist
 
-- [ ] Final runtime is below 3:00 and approximately 2:51.
-- [ ] Audio is clear, English, and synchronized to exact captions.
-- [ ] REPLAY/LIVE LOCAL labels remain visible in product shots.
-- [ ] Scene D visibly communicates the clean finish.
-- [ ] No private or secret content is visible frame by frame.
-- [ ] Codex and GPT-5.6 roles are both stated.
-- [ ] Deterministic authority and fail-closed cleanup are stated.
-- [ ] Simulator language says exact confirmed Gatehold ownership, not generic
+- [x] Final runtime is 171.021333 seconds, below 3:00.
+- [x] Audio is clear, English, and synchronized to exact captions.
+- [x] REPLAY/LIVE LOCAL labels remain visible in product shots.
+- [x] Scene D visibly communicates the clean finish.
+- [x] No private or secret content is visible frame by frame.
+- [x] Codex and GPT-5.6 roles are both stated.
+- [x] Deterministic authority and fail-closed cleanup are stated.
+- [x] Simulator language says exact confirmed Gatehold ownership, not generic
       simulator control or app/device UI proof.
-- [ ] The rendered behavior matches the submitted source revision.
+- [x] Automated QA passes resolution, codecs, loudness, captions, and decode.
+- [x] Manual contact-sheet review passes all nine shots.
+- [ ] The rendered behavior matches the final committed and deployed source
+      revision.
 - [ ] YouTube visibility is public and the link works signed out.

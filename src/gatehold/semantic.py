@@ -37,6 +37,118 @@ _COMMON_SECRET = re.compile(
     r"\b(?:sk-[A-Za-z0-9_-]{8,}|ghp_[A-Za-z0-9_]{8,}|"
     r"github_pat_[A-Za-z0-9_]{8,})\b"
 )
+_AWS_ACCESS_KEY_ID = re.compile(
+    r"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"
+)
+_AWS_SECRET_ACCESS_KEY_ASSIGNMENT = re.compile(
+    r"""
+    (?P<prefix>
+        \bAWS_SECRET_ACCESS_KEY\b
+        \s*["']?\s*(?:=|:)\s*["']?\s*
+    )
+    (?P<value>[A-Za-z0-9/+=]{40})
+    (?![A-Za-z0-9/+=])
+    """,
+    flags=re.IGNORECASE | re.VERBOSE,
+)
+_JWT = re.compile(
+    r"(?<![A-Za-z0-9_-])"
+    r"eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{16,}"
+    r"(?![A-Za-z0-9_-])"
+)
+_SLACK_TOKEN = re.compile(
+    r"(?<![A-Za-z0-9-])"
+    r"(?:xox[aboprsoc]-[A-Za-z0-9-]{10,}|"
+    r"xapp-\d+-[A-Za-z0-9-]{10,}|"
+    r"xoxe(?:\.[A-Za-z0-9-]+)?-[A-Za-z0-9-]{10,})"
+    r"(?![A-Za-z0-9-])",
+    flags=re.IGNORECASE,
+)
+_CONTEXTUAL_SECRET = re.compile(
+    r"""
+    (?P<prefix>
+        \b(?:
+            api[_-]?key
+            | access[_-]?token
+            | auth(?:entication|orization)?[_-]?token
+            | bearer[_-]?token
+            | client[_-]?secret
+            | secret[_-]?key
+            | private[_-]?key
+        )\b
+        \s*["']?\s*(?:=|:)\s*["']?\s*
+    )
+    (?P<value>[A-Za-z0-9][A-Za-z0-9._~+/=-]{23,2000})
+    (?![A-Za-z0-9._~+/=-])
+    """,
+    flags=re.IGNORECASE | re.VERBOSE,
+)
+_PREFIXED_ENV_SECRET = re.compile(
+    r"""
+    (?P<prefix>
+        \b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_
+        (?:
+            API_KEY
+            | ACCESS_TOKEN
+            | AUTH_TOKEN
+            | BEARER_TOKEN
+            | CLIENT_SECRET
+            | SECRET_ACCESS_KEY
+            | SECRET_KEY
+            | PRIVATE_KEY
+            | TOKEN
+        )\b
+        \s*["']?\s*(?:=|:)\s*["']?\s*
+    )
+    (?P<value>[A-Za-z0-9][A-Za-z0-9._~+/=-]{23,2000})
+    (?![A-Za-z0-9._~+/=-])
+    """,
+    flags=re.IGNORECASE | re.VERBOSE,
+)
+_BEARER_SECRET = re.compile(
+    r"(?P<prefix>\bBearer\s+)"
+    r"(?P<value>[A-Za-z0-9][A-Za-z0-9._~+/=-]{23,2000})"
+    r"(?![A-Za-z0-9._~+/=-])",
+    flags=re.IGNORECASE,
+)
+_SECRET_PATTERNS = (
+    _COMMON_SECRET,
+    _AWS_ACCESS_KEY_ID,
+    _JWT,
+    _SLACK_TOKEN,
+)
+_BENIGN_PLACEHOLDER_MARKERS = frozenset(
+    {
+        "changeme",
+        "dummy",
+        "example",
+        "placeholder",
+        "redacted",
+    }
+)
+_BENIGN_PLACEHOLDER_WORDS = frozenset(
+    {
+        *_BENIGN_PLACEHOLDER_MARKERS,
+        "a",
+        "dev",
+        "development",
+        "for",
+        "local",
+        "me",
+        "not",
+        "only",
+        "replace",
+        "sample",
+        "secret",
+        "test",
+        "tests",
+        "token",
+        "value",
+        "with",
+        "your",
+    }
+)
+_BENIGN_PLACEHOLDER_SEPARATORS = re.compile(r"[-_.]+")
 
 _INSTRUCTIONS = """\
 Compare two local software work items for likely hidden semantic overlap.
@@ -198,11 +310,58 @@ def _sanitize_text(value: str, *, limit: int) -> str:
     def replace_path(match: re.Match[str]) -> str:
         return _scope_hint(match.group("path"))
 
-    cleaned = _HOME_PREFIX.sub("<home>", value)
+    cleaned = _OPENAI_KEY_ASSIGNMENT.sub("OPENAI_API_KEY=<redacted>", value)
+    cleaned = _AWS_SECRET_ACCESS_KEY_ASSIGNMENT.sub(
+        lambda match: f"{match.group('prefix')}<secret>",
+        cleaned,
+    )
+    for pattern in _SECRET_PATTERNS:
+        cleaned = pattern.sub("<secret>", cleaned)
+    cleaned = _PREFIXED_ENV_SECRET.sub(_redact_contextual_secret, cleaned)
+    cleaned = _CONTEXTUAL_SECRET.sub(_redact_contextual_secret, cleaned)
+    cleaned = _BEARER_SECRET.sub(_redact_contextual_secret, cleaned)
+    cleaned = _HOME_PREFIX.sub("<home>", cleaned)
     cleaned = _ABSOLUTE_PATH.sub(replace_path, cleaned)
     cleaned = _EMAIL.sub("<email>", cleaned)
-    cleaned = _OPENAI_KEY_ASSIGNMENT.sub("OPENAI_API_KEY=<redacted>", cleaned)
-    cleaned = _COMMON_SECRET.sub("<secret>", cleaned)
     cleaned = "".join(character if character.isprintable() else " " for character in cleaned)
     cleaned = " ".join(cleaned.split())
     return cleaned[:limit]
+
+
+def _redact_contextual_secret(match: re.Match[str]) -> str:
+    value = match.group("value")
+    if not _looks_like_high_confidence_secret(value):
+        return match.group(0)
+    return f"{match.group('prefix')}<secret>"
+
+
+def _looks_like_high_confidence_secret(value: str) -> bool:
+    if _is_benign_placeholder(value):
+        return False
+
+    has_lower = any(character.islower() for character in value)
+    has_upper = any(character.isupper() for character in value)
+    has_alpha = has_lower or has_upper
+    has_digit = any(character.isdigit() for character in value)
+    has_symbol = any(not character.isalnum() for character in value)
+    category_count = sum((has_lower, has_upper, has_digit, has_symbol))
+    if len(set(value)) < 10:
+        return False
+    return (len(value) >= 24 and category_count >= 3) or (
+        len(value) >= 32 and has_alpha and has_digit
+    )
+
+
+def _is_benign_placeholder(value: str) -> bool:
+    if value != value.casefold():
+        return False
+    parts = tuple(part for part in _BENIGN_PLACEHOLDER_SEPARATORS.split(value) if part)
+    if not parts or len(parts) > 8:
+        return False
+    has_marker = bool(_BENIGN_PLACEHOLDER_MARKERS.intersection(parts)) or (
+        len(parts) >= 3 and parts[:3] == ("not", "a", "secret")
+    )
+    return has_marker and all(
+        part in _BENIGN_PLACEHOLDER_WORDS or (part.isdigit() and len(part) <= 4)
+        for part in parts
+    )

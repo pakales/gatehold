@@ -11,10 +11,21 @@ import pytest
 from fastapi import FastAPI
 
 from gatehold.admission import GateholdService
-from gatehold.cli import HOLD_EXIT, LEASE_LOST_EXIT, QUEUE_TIMEOUT_EXIT, main
+from gatehold.cli import (
+    CLEANUP_QUARANTINED_EXIT,
+    HOLD_EXIT,
+    LEASE_LOST_EXIT,
+    QUEUE_TIMEOUT_EXIT,
+    main,
+)
 from gatehold.config import GateholdConfig
 from gatehold.host import StaticHostProbe
-from gatehold.lifecycle import ProcessCleanupResult, RuntimeCleanupResult
+from gatehold.lifecycle import (
+    RUN_LEASE_ENV,
+    RUN_PROVENANCE_ENV,
+    ProcessCleanupResult,
+    RuntimeCleanupResult,
+)
 from gatehold.models import (
     ClaimRequest,
     ClearanceDecision,
@@ -134,10 +145,29 @@ def test_managed_run_uses_literal_argv_shell_false_and_scrubs_secrets(
     monkeypatch.setenv("OPENAI_API_KEY", "fake-openai-secret")
     monkeypatch.setenv("GATEHOLD_QUEUE_TOKEN", "fake-queue-secret")
     monkeypatch.setenv("GATEHOLD_HEARTBEAT_TOKEN", "fake-heartbeat-secret")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "fake-aws-secret")
+    monkeypatch.setenv("GITHUB_TOKEN", "fake-github-secret")
+    monkeypatch.setenv("DATABASE_URL", "postgresql://fake-secret")
+    monkeypatch.setenv("PATH", "/safe/bin:/usr/bin:/bin")
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("TMPDIR", str(tmp_path / "tmp"))
+    monkeypatch.setenv("LANG", "C.UTF-8")
+    monkeypatch.setenv("UV_CACHE_DIR", str(tmp_path / "uv-cache"))
+    monkeypatch.setenv("NPM_CONFIG_CACHE", str(tmp_path / "npm-cache"))
     monkeypatch.delenv("GATEHOLD_PORT", raising=False)
     monkeypatch.setattr(
         "gatehold.resources._port_is_available",
         _port_available,
+    )
+    cleanup_ports: list[int] = []
+
+    def cleanup_port_available(_self: object, port: int) -> bool:
+        cleanup_ports.append(port)
+        return True
+
+    monkeypatch.setattr(
+        "gatehold.lifecycle.LoopbackPortLifecycle.is_available",
+        cleanup_port_available,
     )
 
     class CompletedProcess:
@@ -197,6 +227,10 @@ def test_managed_run_uses_literal_argv_shell_false_and_scrubs_secrets(
             "--no-semantic",
             "--wait-timeout",
             "0",
+            "--pass-env",
+            "UV_CACHE_DIR",
+            "--pass-env",
+            "NPM_CONFIG_CACHE",
             "--",
             "/usr/local/bin/fake-tool",
             literal_argument,
@@ -228,8 +262,20 @@ def test_managed_run_uses_literal_argv_shell_false_and_scrubs_secrets(
     assert "OPENAI_API_KEY" not in child_environment
     assert "GATEHOLD_QUEUE_TOKEN" not in child_environment
     assert "GATEHOLD_HEARTBEAT_TOKEN" not in child_environment
+    assert "AWS_SECRET_ACCESS_KEY" not in child_environment
+    assert "GITHUB_TOKEN" not in child_environment
+    assert "DATABASE_URL" not in child_environment
+    assert child_environment["PATH"] == "/safe/bin:/usr/bin:/bin"
+    assert child_environment["HOME"] == str(tmp_path / "home")
+    assert child_environment["TMPDIR"] == str(tmp_path / "tmp")
+    assert child_environment["LANG"] == "C.UTF-8"
+    assert child_environment["UV_CACHE_DIR"] == str(tmp_path / "uv-cache")
+    assert child_environment["NPM_CONFIG_CACHE"] == str(tmp_path / "npm-cache")
     assert child_environment["GATEHOLD_PORT"].isdigit()
     assert child_environment["GATEHOLD_BROWSER_PROFILE"].startswith(str(state_dir))
+    assert child_environment[RUN_LEASE_ENV] == result_path.stem
+    assert child_environment[RUN_PROVENANCE_ENV].startswith("gh_")
+    assert cleanup_ports == [int(child_environment["GATEHOLD_PORT"])]
 
     service = GateholdService(
         GateholdConfig(state_dir=state_dir),
@@ -246,6 +292,149 @@ def test_managed_run_uses_literal_argv_shell_false_and_scrubs_secrets(
     receipt_json = "".join(receipt.model_dump_json() for receipt in snapshot.recent_receipts)
     assert "fake-tool" in receipt_json
     assert "/usr/local/bin" not in receipt_json
+
+
+def test_managed_run_rejects_protected_pass_env_before_claim(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    state_dir = tmp_path / "state"
+    monkeypatch.setenv("OPENAI_API_KEY", "fake-openai-secret")
+
+    exit_code = main(
+        [
+            "--state-dir",
+            str(state_dir),
+            "run",
+            "--owner",
+            "owner",
+            "--workstream",
+            "invalid-pass-env",
+            "--scope",
+            "src/invalid-pass-env",
+            "--light",
+            "--no-semantic",
+            "--pass-env",
+            "OPENAI_API_KEY",
+            "--",
+            "fake-tool",
+        ]
+    )
+
+    service = GateholdService(
+        GateholdConfig(state_dir=state_dir),
+        host_probe=StaticHostProbe(),
+    )
+
+    assert exit_code == 2
+    assert "may not forward protected variable OPENAI_API_KEY" in capsys.readouterr().err
+    assert service.snapshot().active_leases == ()
+
+
+def test_managed_run_quarantines_success_when_port_cleanup_is_unconfirmed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    state_dir = tmp_path / "state"
+    cleanup_ports: list[int] = []
+    monkeypatch.setattr(
+        "gatehold.resources._port_is_available",
+        _port_available,
+    )
+
+    def cleanup_port_unavailable(_self: object, port: int) -> bool:
+        cleanup_ports.append(port)
+        return False
+
+    monkeypatch.setattr(
+        "gatehold.lifecycle.LoopbackPortLifecycle.is_available",
+        cleanup_port_unavailable,
+    )
+
+    class RunningSupervisor:
+        pid = 91_005
+        stdin = _ActivationPipe()
+
+        def poll(self) -> None:
+            return None
+
+        def terminate(self) -> None:
+            raise AssertionError("cleanup must not guess signals for an unregistered process")
+
+        def wait(self, timeout: float) -> int:
+            del timeout
+            raise AssertionError("the supervisor result is already available")
+
+        def kill(self) -> None:
+            raise AssertionError("cleanup must not guess signals for an unregistered process")
+
+    def fake_popen(
+        command: list[str],
+        *,
+        shell: bool,
+        env: dict[str, str],
+        stdin: int,
+        start_new_session: bool,
+    ) -> RunningSupervisor:
+        del command, env, stdin
+        assert shell is False
+        assert start_new_session is True
+        return RunningSupervisor()
+
+    monkeypatch.setattr("gatehold.cli.subprocess.Popen", fake_popen)
+
+    def completed_supervisor_result(_path: Path) -> int:
+        return 0
+
+    monkeypatch.setattr(
+        "gatehold.cli._consume_supervisor_result",
+        completed_supervisor_result,
+    )
+
+    exit_code = main(
+        [
+            "--state-dir",
+            str(state_dir),
+            "run",
+            "--owner",
+            "owner",
+            "--workstream",
+            "port-quarantine",
+            "--scope",
+            "src/port-quarantine",
+            "--light",
+            "--port",
+            "--no-semantic",
+            "--wait-timeout",
+            "0",
+            "--",
+            "fake-tool",
+        ]
+    )
+
+    service = GateholdService(
+        GateholdConfig(state_dir=state_dir),
+        host_probe=StaticHostProbe(),
+    )
+    snapshot = service.snapshot()
+
+    assert exit_code == CLEANUP_QUARANTINED_EXIT
+    assert "ambiguous runtime quarantined" in capsys.readouterr().err
+    assert len(snapshot.active_leases) == 1
+    active_lease = snapshot.active_leases[0]
+    assert active_lease.resources.port is not None
+    assert cleanup_ports
+    assert set(cleanup_ports) == {active_lease.resources.port}
+    with service.store.reader() as connection:
+        runtime = service.store.get_runtime_ownership(
+            connection,
+            active_lease.lease_id,
+        )
+    assert runtime is not None
+    assert runtime.state == "partial"
+    assert runtime.resources_finalized is False
 
 
 def test_managed_run_terminates_and_kills_child_when_heartbeat_fails(

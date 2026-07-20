@@ -111,6 +111,9 @@ The deterministic test suite must pass with `OPENAI_API_KEY` unset.
 - missing key, refusal, timeout, malformed output, and provider failure preserve
   deterministic policy;
 - OpenAI requests set `store=False`;
+- bounded model input redacts home paths, emails, common provider tokens, JWTs,
+  credential assignments, and high-confidence contextual secrets while
+  preserving ordinary documentation examples;
 - secrets and raw private content do not appear in receipts or logs.
 
 ### API and command boundary
@@ -124,7 +127,12 @@ The deterministic test suite must pass with `OPENAI_API_KEY` unset.
 - mutation inputs use strict bounded schemas;
 - wrong content type, oversized input, and extra fields are rejected;
 - the HTTP API has no arbitrary-command endpoint;
-- the CLI executes argument vectors with `shell=False`.
+- the CLI executes argument vectors with `shell=False`;
+- governed children receive a minimal runtime environment rather than the
+  ambient operator environment;
+- bounded `--pass-env` forwards present non-protected settings while rejecting
+  credentials, Gatehold controls, and known interpreter/startup injection
+  names before a claim exists.
 
 ### Replay and web
 

@@ -1,8 +1,8 @@
 # Gatehold — Devpost Submission Copy
 
-This file is the English source of truth for the OpenAI Build Week entry. The
-public links, Codex evidence identifier, and final validated source revision
-below are verified.
+This file is the English source of truth for the OpenAI Build Week entry.
+Fields explicitly marked pending must be replaced and signed-out verified at
+the user-approved external-release boundary.
 
 ## Submission fields
 
@@ -22,7 +22,7 @@ Developer Tools
 <https://github.com/pakales/gatehold>
 
 **Public YouTube demo URL**
-<https://youtu.be/QBdzI0hqTQY>
+<https://youtu.be/gS-LWm62Tr0>
 
 **Codex `/feedback` session ID**
 `019f7221-2421-78e3-b12e-f6082da1ed87`
@@ -147,12 +147,14 @@ Gatehold into a remote surveillance service or expanding GPT-5.6's authority.
   hold-only output, `store=False`, bounded input, and deterministic fallback.
 - A local CLI for claim, status, heartbeat, release, governed run, and demo.
   Commands and all state mutations execute only from the CLI/local service with
-  `shell=False`; HTTP is sanitized and read-only.
+  `shell=False`; governed children receive a minimal environment with bounded
+  protected-name validation for explicit `--pass-env`; HTTP is sanitized and
+  read-only.
 - React 19, TypeScript, vinext, and OpenAI Sites for a polished public replay
   and live-local dashboard.
 - A reusable Codex skill that makes claim-before-edit, governed heavy work,
   heartbeat, and release part of the agent workflow.
-- A release gate that collects 155 Python contract cases and three Node web
+- A release gate that collects 246 Python contract cases and three Node web
   contract tests, then runs Ruff, Pyright, TypeScript, ESLint, privacy/link
   checks, and a production build.
 
@@ -229,7 +231,7 @@ shutdown.
 - A GPT-5.6 integration that can only make admission more conservative.
 - A public no-secret replay plus a separate live-local control desk.
 - A Codex skill that operationalizes the safety contract for real coding work.
-- A current inventory of 155 Python contract cases plus three Node web contract
+- A current inventory of 246 Python contract cases plus three Node web contract
   tests, strict Python/TypeScript checks, privacy documentation, and a
   reproducible judge route.
 
@@ -268,9 +270,9 @@ is the coherence of that lifecycle, not that each individual primitive is new.
 
 ## Pre-existing-work disclosure
 
-Before this public repository was assembled, private EVL Labs workstation
-prototypes existed, including during the Build Week submission period. The new
-clean Gatehold repository generalizes these concepts:
+Private EVL Labs workstation-coordination prototypes predated the Submission
+Period start on July 13, 2026 at 09:00 PT. The new clean Gatehold repository
+was assembled during the Submission Period and generalizes these concepts:
 
 - explicit workstream collision checks;
 - queued build/test/browser/iOS-heavy work;
@@ -284,6 +286,13 @@ private prompt transcripts were copied into Gatehold. The competition-period
 public work adds the generalized state machine, schemas, daemon/API/CLI,
 hold-only GPT-5.6 boundary, synthetic replay, public UI, tests, documentation,
 and Codex skill.
+
+The submitted Codex session is a long-running product thread. It contains an
+earlier, clearly separate ProofLatch workstream before the user explicitly
+pivoted to Gatehold; the Gatehold implementation, decisions, and validation
+then continued in that same thread. The shared session identifier reflects
+thread continuity, not shared product source. The dated Gatehold repository
+history isolates the competition-period implementation.
 
 Dated evidence is recorded in the repository README and must be paired with
 final dated commit links and the submitted `/feedback` session ID.
@@ -346,6 +355,8 @@ to loopback `Host` and returning only status/version. `/v1/snapshot` and
 `/v1/events` require either an exact browser origin explicitly allowed at daemon
 startup or the bearer token stored in the local mode-`0600` token file. The
 token never enters the URL, browser storage, fixture, or public site.
+The dashboard attempts loopback access only from an HTTP loopback operator URL
+carrying `?local=1`; the public replay never probes a visitor's workstation.
 
 The deterministic product and demo require no OpenAI key. An optional
 server-only key enables the GPT-5.6 semantic adviser. Linux is best-effort for
@@ -411,7 +422,15 @@ and
 The public-link update is
 [`ae268a5dfcc7240d59a55ffcad9d91553311ff04`](https://github.com/pakales/gatehold/commit/ae268a5dfcc7240d59a55ffcad9d91553311ff04).
 
-**Final validation revision:**
+**Last published validated baseline:**
 [`b530fa173fa526bda0574c218fa700f6902bb00d`](https://github.com/pakales/gatehold/commit/b530fa173fa526bda0574c218fa700f6902bb00d)
 — passed the complete public
 [Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29735811254).
+
+**Final validated executable source:**
+[`ba54c575ca510c2ec04bd372392c163fc10099b7`](https://github.com/pakales/gatehold/commit/ba54c575ca510c2ec04bd372392c163fc10099b7)
+
+**Matching public CI run:**
+[Gatehold CI #29749328675](https://github.com/pakales/gatehold/actions/runs/29749328675)
+— passed the complete release contract and dependency audit on the exact
+executable source revision.

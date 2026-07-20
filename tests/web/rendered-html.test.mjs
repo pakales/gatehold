@@ -42,7 +42,7 @@ test("server-renders the Gatehold clearance deck", async () => {
   assert.match(normalized, /Every agent needs clearance\./);
   assert.match(
     normalized,
-    /One machine\. Many agents\. One clearance layer\./,
+    /One machine\.[\s\S]*Many agents\.[\s\S]*One clearance layer\./,
   );
   assert.match(normalized, /Clearance decision/);
   assert.match(normalized, /Agent clearance lanes/);
@@ -64,7 +64,7 @@ test("server-renders the Gatehold clearance deck", async () => {
     normalized,
     /REPLAY ONLY · Host metrics, A–D lanes, and events are bounded demo data\./,
   );
-  assert.match(normalized, /GPT-5\.6 safe boundary/);
+  assert.match(normalized, /Local mode/);
   assert.match(normalized, /gatehold-og\.png/);
   assert.doesNotMatch(
     normalized,
@@ -106,14 +106,21 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
     /health\.status === 401 \|\| health\.status === 403/,
   );
   assert.equal((dashboard.match(/connectLocal\(\)/g) ?? []).length, 1);
-  assert.equal((dashboard.match(/mode: "no-cors"/g) ?? []).length, 1);
+  assert.equal((dashboard.match(/mode: "no-cors"/g) ?? []).length, 0);
+  assert.match(dashboard, /function isLocalOperatorSurface\(\): boolean/);
+  assert.match(dashboard, /currentUrl\.protocol === "http:"/);
+  assert.match(dashboard, /currentUrl\.searchParams\.get\("local"\) === "1"/);
+  assert.match(
+    dashboard,
+    /if \(!isLocalOperatorSurface\(\)\) \{\s*setLocalSnapshot\(null\);\s*setLiveState\("blocked"\);\s*return;\s*\}/,
+  );
   assert.match(
     dashboard,
     /health = await fetch\(`\$\{DAEMON_ORIGIN\}\/healthz`, \{\s*cache: "no-store",\s*headers: \{ Accept: "application\/json" \},\s*credentials: "omit",\s*signal: controller\.signal,\s*\}\);/,
   );
   assert.match(
     dashboard,
-    /catch \{\s*try \{\s*await fetch\(`\$\{DAEMON_ORIGIN\}\/healthz`, \{\s*method: "GET",\s*mode: "no-cors",\s*cache: "no-store",\s*credentials: "omit",\s*signal: controller\.signal,\s*\}\);[\s\S]*?setLiveState\("blocked"\);[\s\S]*?\}\s*return;/,
+    /catch \{\s*setLocalSnapshot\(null\);\s*setLiveState\("offline"\);\s*return;\s*\}/,
   );
   assert.match(
     dashboard,
@@ -123,7 +130,7 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
   assert.match(dashboard, /LOCAL ACCESS BLOCKED · REPLAY SCENARIO/);
   assert.match(
     dashboard,
-    /Grant browser local access and allowlist this exact origin\./,
+    /Use the documented loopback operator URL and allowlist its exact origin\./,
   );
   assert.match(dashboard, /request\.semantic_hold/);
   assert.match(dashboard, /lease\.released/);
@@ -166,6 +173,14 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
   assert.match(dashboard, /label: "Offline"/);
   assert.match(css, /\.mode-cluster small\s*\{\s*display:\s*none/);
   assert.match(css, /\.source-boundary-live/);
+  assert.match(css, /\.decision-deck\s*\{[\s\S]*?order:\s*1;/);
+  assert.match(css, /\.scenario-console\s*\{[\s\S]*?order:\s*2;/);
+  assert.match(css, /\.intro\s*\{[\s\S]*?order:\s*3;/);
+  assert.doesNotMatch(css, /letter-spacing:\s*-/);
+  assert.doesNotMatch(dashboard, /Clearance radar|radar-stage|HOST CORE/);
+  const header = dashboard.match(/<header[\s\S]*?<\/header>/)?.[0] ?? "";
+  assert.match(header, /button-primary/);
+  assert.doesNotMatch(header, /connectLocal|button-quiet/);
   assert.match(
     replayFixture,
     /Gatehold owns the exact synthetic sim-02 boot; any prebooted human simulator remains untouched\./,

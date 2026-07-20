@@ -62,15 +62,14 @@ const cards = [
 function renderCard(card) {
   const rows = card.items
     .map(
-      ([label, value], index) => `
-      <g transform="translate(0 ${index * 116})">
+      ([label, value], index) => `<g transform="translate(0 ${index * 116})">
         <rect width="1448" height="92" rx="18" fill="#0d1311" stroke="#26322d"/>
         <circle cx="38" cy="46" r="7" fill="${card.accent}"/>
         <text x="65" y="39" fill="#718078" font-family="SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="2">${escapeXml(label)}</text>
         <text x="65" y="67" fill="#edf5f0" font-family="-apple-system, BlinkMacSystemFont, Inter, sans-serif" font-size="26" font-weight="650">${escapeXml(value)}</text>
       </g>`
     )
-    .join("");
+    .join("\n      ");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
