@@ -20,12 +20,23 @@ test("server-renders the Gatehold clearance deck", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  assert.equal(
+    response.headers.get("content-security-policy"),
+    "base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'",
+  );
+  assert.equal(
+    response.headers.get("permissions-policy"),
+    "camera=(), geolocation=(), microphone=(), payment=(), usb=()",
+  );
+  assert.equal(response.headers.get("referrer-policy"), "no-referrer");
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("x-frame-options"), "DENY");
 
   const html = await response.text();
   const normalized = html.replaceAll("<!-- -->", "");
   assert.match(
     normalized,
-    /<title>Local clearance for coding agents — GATEHOLD<\/title>/i,
+    /<title>Gatehold — Local clearance for parallel coding agents — GATEHOLD<\/title>/i,
   );
   assert.match(normalized, /GATEHOLD/);
   assert.match(normalized, /Every agent needs clearance\./);
@@ -33,12 +44,18 @@ test("server-renders the Gatehold clearance deck", async () => {
     normalized,
     /One machine\. Many agents\. One clearance layer\./,
   );
-  assert.match(normalized, /Host Core/);
-  assert.match(normalized, /Replay agent lanes/);
-  assert.match(normalized, /Replay event rail/);
+  assert.match(normalized, /Clearance decision/);
+  assert.match(normalized, /Agent clearance lanes/);
+  assert.match(normalized, /Decision trace/);
   assert.match(normalized, /Workstream key/);
   assert.match(normalized, /Capacity key/);
-  assert.match(normalized, /Run collision demo/);
+  assert.match(normalized, /Play 4-step demo/);
+  assert.match(
+    normalized,
+    /Two keys to start\. Verified cleanup to release\./,
+  );
+  assert.match(normalized, /Deterministic policy grants clearance\./);
+  assert.match(normalized, /GPT-5\.6 can only add a hold\./);
   assert.match(
     normalized,
     /REPLAY HOST METRICS · REPLAY SCENARIO/,
@@ -137,8 +154,8 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
     dashboard,
     /LIVE HOST METRICS · A–D lanes and events remain bounded replay data\./,
   );
-  assert.match(dashboard, /Replay agent lanes/);
-  assert.match(dashboard, /Replay event rail/);
+  assert.match(dashboard, /Agent clearance lanes/);
+  assert.match(dashboard, /Decision trace/);
   assert.match(
     dashboard,
     /Gatehold later cleans only an exact runtime it booted and confirmed; prebooted human simulators stay untouched\./,

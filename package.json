@@ -19,7 +19,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "check:privacy": "node scripts/check-privacy.mjs",
     "check:docs": "node scripts/check-doc-links.mjs",
-    "audit:deps": "npm audit --audit-level=high && uv run --with pip-audit pip-audit",
+    "audit:deps": "npm audit --audit-level=high && uv run --with pip-audit==2.10.1 pip-audit --skip-editable",
     "core:serve": "uv run gatehold daemon",
     "core:status": "uv run gatehold status",
     "core:demo": "uv run gatehold demo",
