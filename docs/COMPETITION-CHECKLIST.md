@@ -150,12 +150,12 @@ abc2782cb77b5e7940ddab86f78e7d0888b6d20c
 
 npm run verify:
 PASS — local tree, fresh clone, and public GitHub Actions run
-https://github.com/pakales/gatehold/actions/runs/29731386323
-completed 2026-07-20 12:26:59 EEST
+https://github.com/pakales/gatehold/actions/workflows/ci.yml?query=branch%3Amain
 
 Public demo:
 https://gatehold-buildweek.e-vigelis.chatgpt.site
-Sites version 3; deployed from c914df5b7037843b4b4756e5b96a5b57090dc7ba
+Deployment route: pushed green main → saved Sites version → production.
+Exact source provenance is retained by Sites.
 
 Public repository:
 https://github.com/pakales/gatehold
