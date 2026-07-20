@@ -436,7 +436,7 @@ const liveCopy: Record<LiveState, { label: string; description: string }> = {
 const boundaryCopy: Record<LiveState, { title: string; detail: string }> = {
   replay: {
     title: "REPLAY HOST METRICS · REPLAY SCENARIO",
-    detail: "All values below are bounded demo data.",
+    detail: "Bounded demo data.",
   },
   checking: {
     title: "CHECKING LOCAL HOST · REPLAY SCENARIO",
