@@ -34,15 +34,15 @@ The official rules and Devpost site override this checklist.
 - [x] Link the dated competition-period commits.
 - [x] Record the final validated source revision.
 - [x] Confirm no submission placeholder remains in public or submitted copy.
-- [ ] Confirm public demo opens signed out in a private browser window.
-- [ ] Confirm public repository opens signed out and includes MIT `LICENSE`.
+- [x] Confirm public demo opens signed out in a private browser window.
+- [x] Confirm public repository opens signed out and includes MIT `LICENSE`.
 - [x] Confirm YouTube visibility is **Public**, not Unlisted or Private.
 - [x] Confirm video runtime is under 3:00 and audio is clear.
 - [ ] Confirm the Devpost form is actually submitted, not only saved as draft.
 
 ## Product readiness
 
-- [ ] `npm run verify` passes on the final commit.
+- [x] `npm run verify` passes on the final commit.
 - [x] `uv run gatehold init` succeeds from a fresh state directory.
 - [x] `uv run gatehold demo` emits its documented synthetic grant/hold baseline
   without a key.
@@ -65,13 +65,13 @@ The official rules and Devpost site override this checklist.
 
 ## Public replay and local-live honesty
 
-- [ ] Every public demo screen shows **REPLAY**.
-- [ ] Replay fixture contains synthetic data only.
-- [ ] Public site works without localhost, credentials, or API key.
-- [ ] Live-local mode never implies it can read a remote visitor's workstation.
-- [ ] Disconnected live-local state is honest and usable.
-- [ ] Replay scenes match `docs/DEMO-SCRIPT.md`.
-- [ ] Screenshots and video preserve the mode label.
+- [x] Every public demo screen shows **REPLAY**.
+- [x] Replay fixture contains synthetic data only.
+- [x] Public site works without localhost, credentials, or API key.
+- [x] Live-local mode never implies it can read a remote visitor's workstation.
+- [x] Disconnected live-local state is honest and usable.
+- [x] Replay scenes match `docs/DEMO-SCRIPT.md`.
+- [x] Screenshots and video preserve the mode label.
 
 ## Privacy and security
 
@@ -145,18 +145,47 @@ The official rules and Devpost site override this checklist.
 Complete this immediately before submission:
 
 ```text
-Final commit SHA:
-npm run verify result and timestamp:
-Public demo URL:
-Public repo URL:
-Public YouTube URL and runtime:
-Codex /feedback session ID:
-Private-window demo check:
-Private-window repo check:
-Private-window YouTube check:
-Devpost submitted timestamp:
-Skipped checks:
+Final validated executable source:
+abc2782cb77b5e7940ddab86f78e7d0888b6d20c
+
+npm run verify:
+PASS — local tree, fresh clone, and public GitHub Actions run
+https://github.com/pakales/gatehold/actions/runs/29731386323
+completed 2026-07-20 12:26:59 EEST
+
+Public demo:
+https://gatehold-buildweek.e-vigelis.chatgpt.site
+Sites version 3; deployed from c914df5b7037843b4b4756e5b96a5b57090dc7ba
+
+Public repository:
+https://github.com/pakales/gatehold
+
+Public YouTube video:
+https://youtu.be/QBdzI0hqTQY — Public, 2:51
+
+Codex /feedback session:
+019f7221-2421-78e3-b12e-f6082da1ed87
+
+Anonymous checks — 2026-07-20 12:33 EEST:
+Demo HTTP 200; final headline and REPLAY boundary present; A→D interaction
+finished on Clean finish; desktop/mobile had no console errors or overflow.
+Repository and raw MIT LICENSE HTTP 200; public label present.
+YouTube oEmbed HTTP 200 with the expected title and EV1 Labs author.
+
+Devpost:
+Not submitted yet — final form/CAPTCHA remains the only external gate.
+
+Skipped:
+No source, build, dependency, installer, local-daemon, model, UI, or public-link
+check was skipped. Custom YouTube thumbnail remains unavailable until the
+channel completes YouTube phone verification and does not block eligibility.
+
 Residual risk:
+Gatehold coordinates opt-in cooperative clients, not unmanaged processes.
+vinext still emits an upstream Node punycode deprecation warning while the
+build succeeds. The published video retains the aspirational closing phrase
+"Zero collisions"; the narration limits the claim to cooperative agents, and
+all site/submission copy uses the qualified "One clearance layer" wording.
 ```
 
 ## Stop boundaries
