@@ -25,3 +25,7 @@ AI-voice disclosure from `shot-manifest.json`.
 The four dashboard stills are exact 1920×1080 captures of the local Gatehold
 replay. The supporting cards are rendered deterministically from exact copy;
 no generated claims or data are introduced.
+
+The opening uses `media/cards/title-safe.svg`, a deterministic 1920×1080 frame
+around the approved brand asset. Its slower bounded push-in keeps the wordmark
+and tagline inside the conservative 10% title-safe area throughout S01.

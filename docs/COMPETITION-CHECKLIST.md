@@ -34,10 +34,10 @@ The official rules and Devpost site override this checklist.
 - [x] Link the dated competition-period commits.
 - [x] Record the final validated source revision and matching green CI run.
 - [ ] Confirm no pending-release marker remains in public or submitted copy.
-- [ ] Confirm the exact final public demo opens signed out in a private browser
+- [x] Confirm the exact final public demo opens signed out in a private browser
       window.
 - [x] Confirm public repository opens signed out and includes MIT `LICENSE`.
-- [ ] Confirm the replacement YouTube video is **Public**, not Unlisted or
+- [x] Confirm the replacement YouTube video is **Public**, not Unlisted or
       Private.
 - [x] Confirm the replacement local render is under 3:00 and audio is clear.
 - [ ] Confirm the Devpost form is actually submitted, not only saved as draft.
@@ -122,7 +122,7 @@ The official rules and Devpost site override this checklist.
 - [x] Export at readable resolution and verify terminal text on mobile.
 - [x] Review the replacement local render and contact sheet from start to
       finish.
-- [ ] Watch the uploaded replacement YouTube version from start to finish.
+- [x] Watch the uploaded replacement YouTube version from start to finish.
 
 ## Devpost copy
 
@@ -164,21 +164,23 @@ governed interruption cleanup, and bounded live GPT-5.6 smoke.
 
 Replacement video QA:
 PASS — 171.021333s; 1920x1080; H.264/yuv420p/30; AAC/48kHz/stereo;
--15.89 LUFS; -4.45 dBTP; exact 9-shot captions; 0 decode errors.
+-15.89 LUFS; -4.45 dBTP; exact 9-shot captions; 0 decode errors; opening
+wordmark observed at 211px from the left edge against a 192px title-safe gate.
 SHA-256:
-b96573b39f32eb01cee855057ff6a5a5aabc75212aa06d0c85f481fb6ecb3c15
+6b4022da8f69076b8a4061e79e8997f42dfe0f55f7eb0be2dd605727d63696e3
 
 Current public baseline demo:
 https://gatehold-buildweek.e-vigelis.chatgpt.site
-Final candidate deployment: PENDING
+Final candidate deployment: production deployment v7; source-equivalent to
+the final executable UI revision.
 
 Public repository:
 https://github.com/pakales/gatehold
 
 Replacement public YouTube video:
-https://youtu.be/gS-LWm62Tr0
-CURRENTLY PRIVATE — do not submit until the Public and signed-out playback
-checks pass; never substitute the superseded https://youtu.be/QBdzI0hqTQY render.
+https://youtu.be/nMsqkk9oclQ
+PUBLIC — verified through anonymous YouTube metadata and signed-out browser
+playback. Never substitute the superseded QBdzI0hqTQY or gS-LWm62Tr0 renders.
 
 Codex /feedback session:
 019f7221-2421-78e3-b12e-f6082da1ed87
@@ -190,8 +192,8 @@ Final GitHub Actions run:
 https://github.com/pakales/gatehold/actions/runs/29749328675 — PASS
 
 Final anonymous checks:
-PENDING — exact Sites candidate, repository revision, replacement YouTube
-playback, and Devpost links must all be checked signed out.
+PASS for the exact Sites candidate, public repository and replacement YouTube
+playback. Devpost remains pending until the entry is submitted.
 
 Devpost:
 PENDING — not submitted.
@@ -204,10 +206,9 @@ pending.
 Residual risk:
 Gatehold coordinates opt-in cooperative clients, not unmanaged processes.
 vinext still emits an upstream Node punycode deprecation warning while the
-build succeeds. Merge, GitHub hardening, final Sites deployment, replacement
-YouTube Public visibility, and Devpost submission remain external release
-actions in progress. The older public video must not be used in the final
-Gatehold submission.
+build succeeds. The final media provenance merge, GitHub hardening, and Devpost
+submission remain external release actions in progress. The older public
+videos must not be used in the final Gatehold submission.
 ```
 
 ## Stop boundaries

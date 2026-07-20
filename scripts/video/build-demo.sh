@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$ROOT"
 MANIFEST="$ROOT/media/shot-manifest.json"
 CARDS="$ROOT/media/cards"
 RAW="$ROOT/media/audio/raw"
@@ -58,7 +59,13 @@ while IFS=$'\t' read -r id duration visual motion narration; do
     -af "loudnorm=I=-16:LRA=7:TP=-1.5,apad=pad_dur=$duration,atrim=duration=$duration,aresample=48000" \
     -ar 48000 -ac 2 "$normalized"
 
+  framing_filter="scale=1980:1114:force_original_aspect_ratio=increase:flags=lanczos,crop=1980:1114"
   case "$motion" in
+    push-in-safe)
+      framing_filter="scale=1920:1080:flags=lanczos"
+      zoom_expr="min(zoom+0.00004,1.015)"
+      x_expr="iw/2-(iw/zoom/2)"
+      ;;
     push-in)
       zoom_expr="min(zoom+0.00018,1.035)"
       x_expr="iw/2-(iw/zoom/2)"
@@ -80,7 +87,7 @@ while IFS=$'\t' read -r id duration visual motion narration; do
   ffmpeg -nostdin -y -hide_banner -loglevel error \
     -loop 1 -framerate 30 -t "$duration" -i "$input" \
     -i "$normalized" \
-    -vf "scale=1980:1114:force_original_aspect_ratio=increase:flags=lanczos,crop=1980:1114,zoompan=z='$zoom_expr':x='$x_expr':y='ih/2-(ih/zoom/2)':d=1:s=1920x1080:fps=30,format=yuv420p,fade=t=in:st=0:d=0.35,fade=t=out:st=$(awk -v d="$duration" 'BEGIN{printf "%.3f",d-0.35}'):d=0.35" \
+    -vf "$framing_filter,zoompan=z='$zoom_expr':x='$x_expr':y='ih/2-(ih/zoom/2)':d=1:s=1920x1080:fps=30,format=yuv420p,fade=t=in:st=0:d=0.35,fade=t=out:st=$(awk -v d="$duration" 'BEGIN{printf "%.3f",d-0.35}'):d=0.35" \
     -map 0:v:0 -map 1:a:0 \
     -c:v libx264 -preset medium -crf 17 -r 30 -pix_fmt yuv420p \
     -c:a aac -b:a 192k -ar 48000 -ac 2 \

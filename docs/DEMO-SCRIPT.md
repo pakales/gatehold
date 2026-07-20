@@ -23,7 +23,9 @@ three-minute hard limit.
 
 ### S01 · 0:00–0:13 — The collision
 
-**Picture:** Gatehold title asset. Slow push-in.
+**Picture:** Gatehold title asset inside a deliberate framed command surface.
+Slow push-in; the wordmark and tagline remain inside the conservative 10%
+title-safe area for the entire shot.
 
 **Narration:**
 
@@ -156,6 +158,7 @@ The video must preserve these boundaries:
       simulator control or app/device UI proof.
 - [x] Automated QA passes resolution, codecs, loudness, captions, and decode.
 - [x] Manual contact-sheet review passes all nine shots.
-- [ ] The rendered behavior matches the final committed and deployed source
+- [x] Opening wordmark and tagline remain inside the 10% title-safe area.
+- [x] The rendered behavior matches the final committed and deployed source
       revision.
-- [ ] YouTube visibility is public and the link works signed out.
+- [x] YouTube visibility is public and the link works signed out.

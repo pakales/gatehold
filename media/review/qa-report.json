@@ -6,6 +6,11 @@
   "audio": "aac/48000Hz/2ch",
   "integratedLufs": -15.89,
   "truePeakDbtp": -4.45,
+  "titleSafe": {
+    "status": "PASS",
+    "minimumLeftPx": 192,
+    "observedLeftPx": 211
+  },
   "decodeErrors": 0,
   "captionsExact": true,
   "aiVoiceDisclosure": "Narration is AI-generated using OpenAI text-to-speech.",
