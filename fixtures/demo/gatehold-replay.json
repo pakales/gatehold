@@ -1,0 +1,329 @@
+{
+  "version": "gatehold-replay@1",
+  "scenes": [
+    {
+      "id": "scene-a-cleared",
+      "step": "A",
+      "eyebrow": "Clean admit",
+      "title": "Auth refresh gets both keys",
+      "summary": "Agent 07 owns auth/session and the host has room. The task enters an isolated runtime lane.",
+      "host": {
+        "cpuPercent": 38,
+        "ramPercent": 52,
+        "pressure": "nominal",
+        "heavyActive": 1,
+        "heavyLimit": 2
+      },
+      "lanes": [
+        {
+          "id": "lane-07",
+          "agent": "Agent 07",
+          "task": "Repair token refresh",
+          "workstream": "auth/session",
+          "scope": "auth/session · lane-07 · :49157",
+          "status": "RUNNING",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "Authoritative owner lease; local headroom is available."
+        },
+        {
+          "id": "lane-12",
+          "agent": "Agent 12",
+          "task": "Billing receipt tests",
+          "workstream": "billing/receipts",
+          "scope": "billing/receipts · lane-12 · :49158",
+          "status": "CLEARED",
+          "weight": "light",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "Independent workstream with an isolated browser profile."
+        },
+        {
+          "id": "lane-18",
+          "agent": "Agent 18",
+          "task": "iOS archive",
+          "workstream": "mobile/release",
+          "scope": "mobile/release · ready",
+          "status": "STANDBY",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "idle"
+          },
+          "reason": "Independent workstream; the heavy request has not been submitted."
+        }
+      ],
+      "events": [
+        {
+          "id": "a-1",
+          "time": "09:41:02",
+          "tone": "neutral",
+          "label": "Clearance requested",
+          "detail": "Agent 07 · auth/session"
+        },
+        {
+          "id": "a-2",
+          "time": "09:41:03",
+          "tone": "mint",
+          "label": "Workstream locked",
+          "detail": "lease gh_07b2 · TTL 60s"
+        },
+        {
+          "id": "a-3",
+          "time": "09:41:03",
+          "tone": "mint",
+          "label": "Runtime admitted",
+          "detail": "lane-07 · port 49157"
+        }
+      ]
+    },
+    {
+      "id": "scene-b-semantic-hold",
+      "step": "B",
+      "eyebrow": "Semantic hold",
+      "title": "Different words. Same workstream.",
+      "summary": "Agent 18 asks to harden session renewal. GPT-5.6 raises a conservative review hold; deterministic policy remains authoritative.",
+      "host": {
+        "cpuPercent": 44,
+        "ramPercent": 56,
+        "pressure": "nominal",
+        "heavyActive": 1,
+        "heavyLimit": 2
+      },
+      "lanes": [
+        {
+          "id": "lane-07",
+          "agent": "Agent 07",
+          "task": "Repair token refresh",
+          "workstream": "auth/session",
+          "scope": "auth/session · lane-07 · :49157",
+          "status": "RUNNING",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "The existing deterministic lease remains authoritative."
+        },
+        {
+          "id": "lane-18",
+          "agent": "Agent 18",
+          "task": "Harden session renewal",
+          "workstream": "identity/session",
+          "scope": "identity/session · pending",
+          "status": "SEMANTIC HOLD",
+          "weight": "light",
+          "keys": {
+            "workstream": "hold",
+            "capacity": "pass"
+          },
+          "reason": "GPT-5.6 adds a conservative semantic review hold; it cannot grant clearance or override deterministic policy."
+        },
+        {
+          "id": "lane-12",
+          "agent": "Agent 12",
+          "task": "Billing receipt tests",
+          "workstream": "billing/receipts",
+          "scope": "billing/receipts · lane-12 · :49158",
+          "status": "CLEARED",
+          "weight": "light",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "Unrelated work continues in its independent lane."
+        }
+      ],
+      "events": [
+        {
+          "id": "b-1",
+          "time": "09:42:11",
+          "tone": "neutral",
+          "label": "Agent 18 requested",
+          "detail": "Harden session renewal"
+        },
+        {
+          "id": "b-2",
+          "time": "09:42:12",
+          "tone": "amber",
+          "label": "Semantic overlap raised",
+          "detail": "GPT-5.6 · bounded classifier"
+        },
+        {
+          "id": "b-3",
+          "time": "09:42:12",
+          "tone": "coral",
+          "label": "Workstream hold",
+          "detail": "Existing lease remains authoritative"
+        }
+      ]
+    },
+    {
+      "id": "scene-c-capacity-hold",
+      "step": "C",
+      "eyebrow": "Capacity hold",
+      "title": "Independent task. Host is full.",
+      "summary": "The archive does not overlap, but memory pressure is high and both heavy slots are occupied. It waits in FIFO order.",
+      "host": {
+        "cpuPercent": 86,
+        "ramPercent": 91,
+        "pressure": "high",
+        "heavyActive": 2,
+        "heavyLimit": 2
+      },
+      "lanes": [
+        {
+          "id": "lane-07",
+          "agent": "Agent 07",
+          "task": "Repair token refresh",
+          "workstream": "auth/session",
+          "scope": "auth/session · lane-07 · :49157",
+          "status": "RUNNING",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "The cooperative task stays active."
+        },
+        {
+          "id": "lane-12",
+          "agent": "Agent 12",
+          "task": "Web integration suite",
+          "workstream": "web/verify",
+          "scope": "web/verify · lane-12 · :49158",
+          "status": "RUNNING",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "Agent 12 owns heavy slot 2 of 2; Gatehold never kills it."
+        },
+        {
+          "id": "lane-18",
+          "agent": "Agent 18",
+          "task": "iOS release archive",
+          "workstream": "mobile/release",
+          "scope": "mobile/release · queued",
+          "status": "CAPACITY HOLD",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "hold"
+          },
+          "reason": "The independent task remains at synthetic FIFO position 01 while the host is full."
+        }
+      ],
+      "events": [
+        {
+          "id": "c-1",
+          "time": "09:44:07",
+          "tone": "mint",
+          "label": "Workstream clear",
+          "detail": "mobile/release is independent"
+        },
+        {
+          "id": "c-2",
+          "time": "09:44:07",
+          "tone": "amber",
+          "label": "Capacity key withheld",
+          "detail": "RAM 91% · heavy slots 2/2"
+        },
+        {
+          "id": "c-3",
+          "time": "09:44:08",
+          "tone": "neutral",
+          "label": "Queued safely",
+          "detail": "Agent 18 · FIFO 01"
+        }
+      ]
+    },
+    {
+      "id": "scene-d-release",
+      "step": "D",
+      "eyebrow": "Clean finish",
+      "title": "Cleanup clears the next lane",
+      "summary": "Agent 12 finishes and returns its heavy slot. Gatehold later cleans only an exact runtime it booted and confirmed; prebooted human simulators stay untouched.",
+      "host": {
+        "cpuPercent": 61,
+        "ramPercent": 68,
+        "pressure": "nominal",
+        "heavyActive": 2,
+        "heavyLimit": 2
+      },
+      "lanes": [
+        {
+          "id": "lane-07",
+          "agent": "Agent 07",
+          "task": "Repair token refresh",
+          "workstream": "auth/session",
+          "scope": "auth/session · lane-07 · :49157",
+          "status": "RUNNING",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "Independent active work continues without interruption."
+        },
+        {
+          "id": "lane-12",
+          "agent": "Agent 12",
+          "task": "Web integration suite",
+          "workstream": "web/verify",
+          "scope": "web/verify · receipt 8f3a",
+          "status": "RELEASED",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "idle",
+            "capacity": "idle"
+          },
+          "reason": "The owned process group, port, and browser profile are verified clean before the slot returns."
+        },
+        {
+          "id": "lane-18",
+          "agent": "Agent 18",
+          "task": "iOS release archive",
+          "workstream": "mobile/release",
+          "scope": "mobile/release · lane-18 · sim-02",
+          "status": "RUNNING",
+          "weight": "heavy",
+          "keys": {
+            "workstream": "pass",
+            "capacity": "pass"
+          },
+          "reason": "Agent 18 advances from FIFO position 01 into the available heavy lane. Gatehold owns the exact synthetic sim-02 boot; any prebooted human simulator remains untouched."
+        }
+      ],
+      "events": [
+        {
+          "id": "d-1",
+          "time": "09:45:30",
+          "tone": "mint",
+          "label": "Owned cleanup verified",
+          "detail": "process group · :49158 · profile"
+        },
+        {
+          "id": "d-2",
+          "time": "09:45:31",
+          "tone": "neutral",
+          "label": "Heavy slot returned",
+          "detail": "Agent 12 · receipt 8f3a"
+        },
+        {
+          "id": "d-3",
+          "time": "09:45:31",
+          "tone": "mint",
+          "label": "Next task admitted",
+          "detail": "mobile/release · exact owned sim-02"
+        }
+      ]
+    }
+  ]
+}
