@@ -145,6 +145,8 @@ def test_credentials_are_random_hashed_and_constant_time_verifiable() -> None:
 
     assert len(first) >= 32
     assert len(second) >= 32
+    assert first.startswith("gh_")
+    assert second.startswith("gh_")
     assert first != second
     assert secret_digest(first) != first
     assert verify_secret(first, secret_digest(first))

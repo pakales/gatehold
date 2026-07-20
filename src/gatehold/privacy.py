@@ -31,7 +31,9 @@ def scope_digest(scopes: tuple[str, ...] | list[str]) -> str:
 
 
 def new_secret() -> str:
-    return secrets.token_urlsafe(32)
+    """Return a high-entropy secret that is also safe as a CLI option value."""
+
+    return f"gh_{secrets.token_urlsafe(32)}"
 
 
 def secret_digest(secret: str) -> str:
