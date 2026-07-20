@@ -1,7 +1,7 @@
 # Gatehold — Devpost Submission Copy
 
-This file is the English source of truth for the OpenAI Build Week entry. Replace
-every `PENDING_*` marker with verified final evidence before submission.
+This file is the English source of truth for the OpenAI Build Week entry. Every
+public link and evidence identifier below is the verified submission value.
 
 ## Submission fields
 
@@ -15,16 +15,16 @@ Local air-traffic control for coding agents.
 Developer Tools
 
 **Public demo URL**
-`PENDING_PUBLIC_DEMO_URL`
+<https://gatehold-buildweek.e-vigelis.chatgpt.site>
 
 **Code repository URL**
-`PENDING_PUBLIC_REPOSITORY_URL`
+<https://github.com/pakales/gatehold>
 
 **Public YouTube demo URL**
-`PENDING_PUBLIC_YOUTUBE_URL`
+<https://youtu.be/QBdzI0hqTQY>
 
 **Codex `/feedback` session ID**
-`PENDING_CODEX_SESSION_ID`
+`019f7221-2421-78e3-b12e-f6082da1ed87`
 
 **License**
 MIT
@@ -252,7 +252,7 @@ flows, and submission narratives. They share no product source code.
 
 ### Fast path — no install
 
-1. Open `PENDING_PUBLIC_DEMO_URL`.
+1. Open <https://gatehold-buildweek.e-vigelis.chatgpt.site>.
 2. Confirm the mode is labeled **REPLAY**.
 3. Step through admitted ownership, workstream collision, host-capacity waiting,
    exclusive runtime lanes, exact-UDID simulator ownership, and Scene D's
@@ -326,8 +326,8 @@ Gatehold — Every Agent Needs Clearance | OpenAI Build Week
 > exact-UDID simulator ownership. A pre-booted simulator stays external;
 > Gatehold shuts down only the exact simulator it booted and confirmed.
 >
-> Live demo: PENDING_PUBLIC_DEMO_URL
-> Source code: PENDING_PUBLIC_REPOSITORY_URL
+> Live demo: https://gatehold-buildweek.e-vigelis.chatgpt.site
+> Source code: https://github.com/pakales/gatehold
 >
 > Built for OpenAI Build Week in the Developer Tools category using Codex and a
 > bounded GPT-5.6 runtime adviser.
@@ -344,8 +344,14 @@ Gatehold — Every Agent Needs Clearance | OpenAI Build Week
 ## Build Week evidence
 
 **Submission period work date:** 2026-07-20 EEST
-**Primary Codex evidence:** `PENDING_CODEX_SESSION_ID`
-**Dated commit evidence:** `PENDING_DATED_COMMIT_URLS`
-**Final validation revision:** `PENDING_FINAL_COMMIT_SHA`
 
-These markers must not remain in the submitted Devpost entry.
+**Primary Codex evidence:** `019f7221-2421-78e3-b12e-f6082da1ed87`
+
+**Dated commit evidence:**
+[deterministic clearance and owned cleanup](https://github.com/pakales/gatehold/commit/b10d8d578eac6b48c04c58d7dbb77442d6b27594),
+[premium control deck](https://github.com/pakales/gatehold/commit/da8e5a0895789b7b50c54e7f90be3ba8417cee25),
+and
+[judge evidence and demo package](https://github.com/pakales/gatehold/commit/945175d99dec4d49193e237d841911fd79777406).
+
+**Final validation revision:**
+[`945175d99dec4d49193e237d841911fd79777406`](https://github.com/pakales/gatehold/commit/945175d99dec4d49193e237d841911fd79777406)

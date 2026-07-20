@@ -2,10 +2,7 @@
 
 ## 90-second path — no install, account, or key
 
-> **Submission placeholder:** replace `PENDING_PUBLIC_DEMO_URL` with the
-> signed-out verified production URL before judging.
-
-1. Open `PENDING_PUBLIC_DEMO_URL`.
+1. Open <https://gatehold-buildweek.e-vigelis.chatgpt.site>.
 2. Confirm the persistent mode label says **REPLAY**.
 3. Start the bounded scenario.
 4. Observe one agent receive workstream clearance and a TTL-bound lease.

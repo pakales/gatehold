@@ -27,17 +27,17 @@ The official rules and Devpost site override this checklist.
 
 ## P0 blockers — must be real, public, and signed-out tested
 
-- [ ] Replace `PENDING_PUBLIC_DEMO_URL` in `docs/SUBMISSION.md`.
-- [ ] Replace `PENDING_PUBLIC_REPOSITORY_URL`.
-- [ ] Replace `PENDING_PUBLIC_YOUTUBE_URL`.
-- [ ] Replace `PENDING_CODEX_SESSION_ID` with the real `/feedback` session ID.
-- [ ] Replace `PENDING_DATED_COMMIT_URLS`.
-- [ ] Replace `PENDING_FINAL_COMMIT_SHA`.
-- [ ] Confirm no `PENDING_` marker remains in public or submitted copy.
+- [x] Record the production demo URL in `docs/SUBMISSION.md`.
+- [x] Record the public repository URL.
+- [x] Record the public YouTube URL.
+- [x] Record the real Codex `/feedback` session ID.
+- [x] Link the dated competition-period commits.
+- [x] Record the final validated source revision.
+- [x] Confirm no submission placeholder remains in public or submitted copy.
 - [ ] Confirm public demo opens signed out in a private browser window.
 - [ ] Confirm public repository opens signed out and includes MIT `LICENSE`.
-- [ ] Confirm YouTube visibility is **Public**, not Unlisted or Private.
-- [ ] Confirm video runtime is under 3:00 and audio is clear.
+- [x] Confirm YouTube visibility is **Public**, not Unlisted or Private.
+- [x] Confirm video runtime is under 3:00 and audio is clear.
 - [ ] Confirm the Devpost form is actually submitted, not only saved as draft.
 
 ## Product readiness
