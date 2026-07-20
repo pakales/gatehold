@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { GateholdDashboard } from "./GateholdDashboard";
 
 export const metadata: Metadata = {
-  title: "Local clearance for coding agents",
+  title: "Gatehold — Local clearance for parallel coding agents",
   description:
-    "See how Gatehold raises semantic workstream holds and queues heavy agent work when your local machine is under pressure.",
+    "Two keys to start. Verified cleanup to release. Prevent overlapping work before cooperative coding agents share one machine.",
 };
 
 export default function Home() {

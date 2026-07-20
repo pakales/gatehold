@@ -31,7 +31,7 @@ import {
 } from "react";
 
 const DAEMON_ORIGIN = "http://127.0.0.1:47820";
-const DEMO_STEP_MS = 1750;
+const DEMO_STEP_MS = 2800;
 
 type KeyState = "pass" | "hold" | "idle";
 type Tone = "mint" | "amber" | "coral" | "neutral";
@@ -544,7 +544,7 @@ function Metric({
 }
 
 export function GateholdDashboard() {
-  const [sceneIndex, setSceneIndex] = useState(0);
+  const [sceneIndex, setSceneIndex] = useState(1);
   const [isRunning, setIsRunning] = useState(false);
   const [liveState, setLiveState] = useState<LiveState>("replay");
   const [localSnapshot, setLocalSnapshot] =
@@ -754,7 +754,7 @@ export function GateholdDashboard() {
             ) : (
               <Play aria-hidden="true" size={16} fill="currentColor" />
             )}
-            <span>{isRunning ? "Running judge…" : "Run collision demo"}</span>
+            <span>{isRunning ? "Playing clearance…" : "Play 4-step demo"}</span>
           </button>
         </div>
       </header>
@@ -763,18 +763,54 @@ export function GateholdDashboard() {
         <div>
           <p className="eyebrow">
             <CircleDot aria-hidden="true" size={13} />
-            Local admission control
+            Local clearance for parallel coding agents
           </p>
           <h1 id="control-deck">
             One machine. Many agents.
             <span> One clearance layer.</span>
           </h1>
         </div>
-        <p className="intro-note">
-          Every task needs two keys before it runs:
-          <strong> workstream ownership</strong> and
-          <strong> host capacity</strong>.
-        </p>
+        <div className="intro-note">
+          <strong className="product-contract">
+            Two keys to start. Verified cleanup to release.
+          </strong>
+          <p>
+            Gatehold blocks overlapping work, queues heavy jobs when the host
+            is full, and releases a lane only after owned cleanup is verified.
+          </p>
+          <div className="authority-rule">
+            <ShieldCheck aria-hidden="true" size={17} />
+            <span>
+              <strong>Deterministic policy grants clearance.</strong>
+              <small>GPT-5.6 can only add a hold.</small>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className={`decision-deck decision-${scene.verdictTone}`}
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <div className="decision-signal">
+          <span>Now · Scene {scene.step}</span>
+          <strong>{scene.verdict}</strong>
+        </div>
+        <div className="decision-copy">
+          <h2>{scene.title}</h2>
+          <p>{scene.summary}</p>
+        </div>
+        <div className="decision-contract" aria-label="Gatehold two-key rule">
+          <span>
+            <small>Key 01</small>
+            <strong>Workstream owner</strong>
+          </span>
+          <span>
+            <small>Key 02</small>
+            <strong>Host capacity</strong>
+          </span>
+        </div>
       </section>
 
       <section
@@ -846,8 +882,8 @@ export function GateholdDashboard() {
         <article className="panel radar-panel" aria-labelledby="host-core-title">
           <div className="panel-heading">
             <div>
-              <p className="panel-kicker">Deterministic judge</p>
-              <h2 id="host-core-title">Host Core</h2>
+              <p className="panel-kicker">Deterministic policy</p>
+              <h2 id="host-core-title">Clearance decision</h2>
             </div>
             <span className={`verdict verdict-${scene.verdictTone}`}>
               {scene.verdict}
@@ -855,7 +891,7 @@ export function GateholdDashboard() {
           </div>
           <div
             className={`radar-stage radar-${scene.verdictTone}`}
-            aria-label={`Host Core radar. ${scene.title}`}
+            aria-label={`Clearance radar. ${scene.title}`}
           >
             <div className="radar-ring ring-one" aria-hidden="true" />
             <div className="radar-ring ring-two" aria-hidden="true" />
@@ -885,15 +921,6 @@ export function GateholdDashboard() {
               <span>CPU</span>
             </div>
           </div>
-          <div className="scene-narrative" aria-live="polite" aria-atomic="true">
-            <div className={`scene-step tone-${scene.verdictTone}`}>
-              {scene.step}
-            </div>
-            <div>
-              <h3>{scene.title}</h3>
-              <p>{scene.summary}</p>
-            </div>
-          </div>
           <div className="model-boundary">
             <Sparkles aria-hidden="true" size={15} />
             <p>
@@ -908,7 +935,7 @@ export function GateholdDashboard() {
           <div className="section-heading">
             <div>
               <p className="panel-kicker">Bounded A–D scenario</p>
-              <h2 id="agent-lanes-title">Replay agent lanes</h2>
+              <h2 id="agent-lanes-title">Agent clearance lanes</h2>
             </div>
             <span className="section-count">
               {scene.lanes.length} replay lanes
@@ -959,7 +986,7 @@ export function GateholdDashboard() {
           <div className="panel-heading">
             <div>
               <p className="panel-kicker">Bounded scenario signals</p>
-              <h2 id="event-rail-title">Replay event rail</h2>
+              <h2 id="event-rail-title">Decision trace</h2>
             </div>
             <Activity aria-hidden="true" size={18} />
           </div>

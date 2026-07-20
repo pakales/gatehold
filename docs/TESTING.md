@@ -28,7 +28,8 @@ a fresh clone with no pre-existing `dist/`.
 Do not state that the gate passed unless it was run against the exact source
 state being handed off.
 
-Run the network-backed advisory checks separately:
+CI also runs this network-backed advisory gate after the deterministic release
+checks:
 
 ```bash
 npm run audit:deps
