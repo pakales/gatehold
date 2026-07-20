@@ -22,8 +22,7 @@ Developer Tools
 <https://github.com/pakales/gatehold>
 
 **Public YouTube demo URL**
-Pending final replacement upload. The superseded
-<https://youtu.be/QBdzI0hqTQY> render must not be submitted.
+<https://youtu.be/gS-LWm62Tr0>
 
 **Codex `/feedback` session ID**
 `019f7221-2421-78e3-b12e-f6082da1ed87`
@@ -271,9 +270,9 @@ is the coherence of that lifecycle, not that each individual primitive is new.
 
 ## Pre-existing-work disclosure
 
-Before this public repository was assembled, private EVL Labs workstation
-prototypes existed, including during the Build Week submission period. The new
-clean Gatehold repository generalizes these concepts:
+Private EVL Labs workstation-coordination prototypes predated the Submission
+Period start on July 13, 2026 at 09:00 PT. The new clean Gatehold repository
+was assembled during the Submission Period and generalizes these concepts:
 
 - explicit workstream collision checks;
 - queued build/test/browser/iOS-heavy work;
@@ -287,6 +286,13 @@ private prompt transcripts were copied into Gatehold. The competition-period
 public work adds the generalized state machine, schemas, daemon/API/CLI,
 hold-only GPT-5.6 boundary, synthetic replay, public UI, tests, documentation,
 and Codex skill.
+
+The submitted Codex session is a long-running product thread. It contains an
+earlier, clearly separate ProofLatch workstream before the user explicitly
+pivoted to Gatehold; the Gatehold implementation, decisions, and validation
+then continued in that same thread. The shared session identifier reflects
+thread continuity, not shared product source. The dated Gatehold repository
+history isolates the competition-period implementation.
 
 Dated evidence is recorded in the repository README and must be paired with
 final dated commit links and the submitted `/feedback` session ID.
@@ -421,5 +427,10 @@ The public-link update is
 — passed the complete public
 [Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29735811254).
 
-**Final validation revision and matching CI run:** pending the reviewed
-candidate commit, push, and green public gate.
+**Final validated executable source:**
+[`ba54c575ca510c2ec04bd372392c163fc10099b7`](https://github.com/pakales/gatehold/commit/ba54c575ca510c2ec04bd372392c163fc10099b7)
+
+**Matching public CI run:**
+[Gatehold CI #29749328675](https://github.com/pakales/gatehold/actions/runs/29749328675)
+— passed the complete release contract and dependency audit on the exact
+executable source revision.

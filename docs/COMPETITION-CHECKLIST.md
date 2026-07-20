@@ -29,10 +29,10 @@ The official rules and Devpost site override this checklist.
 
 - [x] Record the production demo URL in `docs/SUBMISSION.md`.
 - [x] Record the public repository URL.
-- [ ] Record the final replacement public YouTube URL.
+- [x] Record the final replacement YouTube URL.
 - [x] Record the real Codex `/feedback` session ID.
 - [x] Link the dated competition-period commits.
-- [ ] Record the final validated source revision and matching green CI run.
+- [x] Record the final validated source revision and matching green CI run.
 - [ ] Confirm no pending-release marker remains in public or submitted copy.
 - [ ] Confirm the exact final public demo opens signed out in a private browser
       window.
@@ -44,7 +44,7 @@ The official rules and Devpost site override this checklist.
 
 ## Product readiness
 
-- [ ] `npm run verify` passes on the exact final commit and public CI.
+- [x] `npm run verify` passes on the exact final executable commit and public CI.
 - [x] `uv run gatehold init` succeeds from a fresh state directory.
 - [x] `uv run gatehold demo` emits its documented synthetic grant/hold baseline
   without a key.
@@ -153,8 +153,9 @@ Replace every pending field immediately before submission:
 
 ```text
 Candidate state:
-Local reviewed release candidate; final commit, push, merge, and public CI are
-pending the explicit external-release approval boundary.
+Exact executable candidate committed and pushed; public CI is green. Release
+provenance update, merge, Sites deployment, YouTube publication, and Devpost
+submission remain in progress at the approved external-release boundary.
 
 Local release gate:
 PASS — 246 Python tests + 3 Node web tests, Ruff, Pyright, TypeScript, ESLint,
@@ -175,16 +176,18 @@ Public repository:
 https://github.com/pakales/gatehold
 
 Replacement public YouTube video:
-PENDING — do not submit the superseded https://youtu.be/QBdzI0hqTQY render
+https://youtu.be/gS-LWm62Tr0
+CURRENTLY PRIVATE — do not submit until the Public and signed-out playback
+checks pass; never substitute the superseded https://youtu.be/QBdzI0hqTQY render.
 
 Codex /feedback session:
 019f7221-2421-78e3-b12e-f6082da1ed87
 
 Final validated executable source:
-PENDING
+ba54c575ca510c2ec04bd372392c163fc10099b7
 
 Final GitHub Actions run:
-PENDING
+https://github.com/pakales/gatehold/actions/runs/29749328675 — PASS
 
 Final anonymous checks:
 PENDING — exact Sites candidate, repository revision, replacement YouTube
@@ -195,15 +198,15 @@ PENDING — not submitted.
 
 Skipped:
 No local source, build, dependency, installer, daemon, model, UI, media, or
-privacy check was skipped. Exact public-release checks remain intentionally
-pending until publication.
+privacy check was skipped. Only publication-dependent signed-out checks remain
+pending.
 
 Residual risk:
 Gatehold coordinates opt-in cooperative clients, not unmanaged processes.
 vinext still emits an upstream Node punycode deprecation warning while the
-build succeeds. GitHub branch protection, vulnerability alerts, final Sites
-deployment, replacement YouTube publication, and Devpost submission remain
-external release actions. The older public video must not be used in the final
+build succeeds. Merge, GitHub hardening, final Sites deployment, replacement
+YouTube Public visibility, and Devpost submission remain external release
+actions in progress. The older public video must not be used in the final
 Gatehold submission.
 ```
 

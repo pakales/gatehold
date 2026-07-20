@@ -372,9 +372,10 @@ Gatehold is entered in the **Developer Tools** category of OpenAI Build Week.
 The clean Gatehold repository and its generalized public implementation were
 created during the submission period.
 
-Private EVL Labs workstation prototypes also existed during the submission
-period before this public repository was assembled. Gatehold reuses these
-concepts, not their private source code:
+Private EVL Labs workstation-coordination prototypes predated the Submission
+Period start on July 13, 2026 at 09:00 PT. This clean public Gatehold repository
+was assembled during the Submission Period and reuses these concepts, not
+their private source code:
 
 | Reused concept | New Gatehold implementation |
 | --- | --- |
@@ -402,13 +403,20 @@ documentation, and Codex skill.
 
 The primary Codex `/feedback` session ID is
 `019f7221-2421-78e3-b12e-f6082da1ed87`. Dated public commit links are recorded
-in [Devpost Submission Copy](docs/SUBMISSION.md). The last published,
-fully validated baseline before the current final hardening pass is
+in [Devpost Submission Copy](docs/SUBMISSION.md). This long-running Codex task
+contains an earlier, separate ProofLatch workstream before the explicit pivot
+to Gatehold; the shared task ID records thread continuity, while the products
+share no source code and the dated Gatehold commits isolate this implementation.
+
+The last published, fully validated baseline before the final hardening pass is
 [`b530fa173fa526bda0574c218fa700f6902bb00d`](https://github.com/pakales/gatehold/commit/b530fa173fa526bda0574c218fa700f6902bb00d);
 it passed the complete public
 [Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29735811254).
-The exact final candidate revision and matching public CI run are recorded only
-after the reviewed candidate is committed, pushed, and green.
+The final validated executable source is
+[`ba54c575ca510c2ec04bd372392c163fc10099b7`](https://github.com/pakales/gatehold/commit/ba54c575ca510c2ec04bd372392c163fc10099b7),
+which passed the exact public
+[Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29749328675),
+including the release contract and dependency audit.
 
 ## Repository map
 
