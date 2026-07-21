@@ -4,6 +4,14 @@
 
 [![Gatehold CI](https://github.com/pakales/gatehold/actions/workflows/ci.yml/badge.svg)](https://github.com/pakales/gatehold/actions/workflows/ci.yml)
 
+[Live demo](https://gatehold-buildweek.e-vigelis.chatgpt.site) ·
+[Demo video](https://youtu.be/nMsqkk9oclQ) ·
+[Devpost](https://devpost.com/software/gatehold) ·
+[EV1 Labs](https://ev1labs.com/)
+
+Built by [EV1 Labs](https://ev1labs.com/) as part of the
+[Build Week 2026 collection](https://ev1labs.com/labs/build-week-2026/).
+
 ## Judge in 90 seconds
 
 **Build Week status:** [Submitted on Devpost](https://devpost.com/software/gatehold).

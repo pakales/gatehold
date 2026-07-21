@@ -1061,14 +1061,32 @@ export function GateholdDashboard() {
       </section>
 
       <footer className="product-footnote">
-        <p>
-          <Radio aria-hidden="true" size={13} />
-          {footerCopy[liveState]}
-        </p>
-        <p>
-          Cooperative governor · never a security sandbox · never kills
-          unrelated processes
-        </p>
+        <div className="product-footnote-copy">
+          <p>
+            <Radio aria-hidden="true" size={13} />
+            {footerCopy[liveState]}
+          </p>
+          <p>
+            Cooperative governor · never a security sandbox · never kills
+            unrelated processes
+          </p>
+        </div>
+        <nav className="studio-credit" aria-label="Studio and Build Week collection">
+          <span>
+            Built by{" "}
+            <a href="https://ev1labs.com/" target="_blank" rel="noreferrer">
+              EV1 Labs
+            </a>
+          </span>
+          <span aria-hidden="true">·</span>
+          <a
+            href="https://ev1labs.com/labs/build-week-2026/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Build Week 2026 collection
+          </a>
+        </nav>
       </footer>
     </main>
   );

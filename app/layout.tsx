@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://gatehold-buildweek.e-vigelis.chatgpt.site"),
   title: {
     default: "GATEHOLD — Local clearance for coding agents",
     template: "%s — GATEHOLD",
@@ -20,6 +21,12 @@ export const metadata: Metadata = {
   description:
     "One machine. Many agents. One clearance layer. Gatehold coordinates local coding agents with workstream and host-capacity clearance.",
   applicationName: "GATEHOLD",
+  authors: [{ name: "EV1 Labs", url: "https://ev1labs.com/" }],
+  creator: "EV1 Labs",
+  publisher: "EV1 Labs",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
@@ -29,6 +36,8 @@ export const metadata: Metadata = {
     title: "GATEHOLD — Every agent needs clearance",
     description:
       "One machine. Many agents. One clearance layer. Local admission control for parallel coding agents.",
+    url: "/",
+    siteName: "Gatehold by EV1 Labs",
     images: [
       {
         url: "/gatehold-og.png",
