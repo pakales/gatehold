@@ -71,6 +71,15 @@ test("server-renders the Gatehold clearance deck", async () => {
   );
   assert.match(normalized, /Local mode/);
   assert.match(normalized, /gatehold-og\.png/);
+  assert.match(
+    normalized,
+    /<a href="https:\/\/ev1labs\.com\/"[^>]*>EV1 Labs<\/a>/,
+  );
+  assert.match(
+    normalized,
+    /<a href="https:\/\/ev1labs\.com\/labs\/build-week-2026\/"[^>]*>Build Week 2026 collection<\/a>/,
+  );
+  assert.match(normalized, /Built by/);
   assert.doesNotMatch(
     normalized,
     /Your site is taking shape|Building your site/,
@@ -203,6 +212,9 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
   assert.match(replayFixture, /mobile\/release · exact owned sim-02/);
   assert.match(page, /GateholdDashboard/);
   assert.match(layout, /GATEHOLD — Local clearance for coding agents/);
+  assert.match(layout, /authors:\s*\[\{ name: "EV1 Labs", url: "https:\/\/ev1labs\.com\/" \}\]/);
+  assert.match(layout, /creator: "EV1 Labs"/);
+  assert.match(layout, /metadataBase: new URL\("https:\/\/gatehold-buildweek\.e-vigelis\.chatgpt\.site"\)/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /:focus-visible/);
   assert.doesNotMatch(css, /url\(["']?https?:\/\//i);

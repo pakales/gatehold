@@ -1788,11 +1788,41 @@ a:focus-visible {
   line-height: 1.4;
 }
 
-.product-footnote p {
+.product-footnote-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.product-footnote p,
+.studio-credit {
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 0;
+}
+
+.studio-credit {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.studio-credit a {
+  color: #b9c2bd;
+  text-decoration-color: rgb(136 242 192 / 0.28);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.studio-credit a:hover {
+  color: var(--mint);
+  text-decoration-color: currentColor;
+}
+
+.studio-credit a:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--mint);
+  outline-offset: 3px;
 }
 
 .spin {
@@ -2050,6 +2080,11 @@ a:focus-visible {
     align-items: flex-start;
     flex-direction: column;
     gap: 6px;
+  }
+
+  .studio-credit {
+    justify-content: flex-start;
+    text-align: left;
   }
 }
 
