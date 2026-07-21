@@ -5,7 +5,7 @@
 [![Gatehold CI](https://github.com/pakales/gatehold/actions/workflows/ci.yml/badge.svg)](https://github.com/pakales/gatehold/actions/workflows/ci.yml)
 
 [Live demo](https://gatehold-buildweek.e-vigelis.chatgpt.site) ·
-[Demo video](https://youtu.be/nMsqkk9oclQ) ·
+[Demo video](https://youtu.be/ABVdW7GwnN8) ·
 [Devpost](https://devpost.com/software/gatehold) ·
 [EV1 Labs](https://ev1labs.com/)
 
