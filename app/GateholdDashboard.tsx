@@ -739,7 +739,6 @@ export function GateholdDashboard() {
     <main
       className={`gatehold-shell${isRunning ? " demo-running" : ""}`}
     >
-      <div className="ambient-grid" aria-hidden="true" />
       <header className="topbar">
         <a className="brand" href="#control-deck" aria-label="Gatehold home">
           <span className="brand-mark" aria-hidden="true">
@@ -757,6 +756,16 @@ export function GateholdDashboard() {
             <small>{modeCopy.description}</small>
           </span>
         </div>
+        <a
+          className="publisher-signature"
+          href="https://ev1labs.com/labs/build-week-2026/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="An EV1 Labs build — Build Week 2026 collection"
+        >
+          <span className="publisher-mark" aria-hidden="true" />
+          <span>AN EV1 LABS BUILD</span>
+        </a>
         <div className="header-actions">
           <a
             className="button button-quiet"
@@ -768,28 +777,6 @@ export function GateholdDashboard() {
             <ShieldCheck aria-hidden="true" size={15} />
             <span>Inspect repo evidence</span>
           </a>
-          <button
-            className="button button-primary"
-            type="button"
-            onClick={toggleDemo}
-            aria-pressed={isRunning}
-          >
-            {isRunning ? (
-              <Pause aria-hidden="true" size={16} />
-            ) : (
-              <Play aria-hidden="true" size={16} fill="currentColor" />
-            )}
-            <span className="button-label-full">
-              {isRunning
-                ? "Pause demo"
-                : demoStarted
-                  ? "Resume demo"
-                  : "Play 4-step demo"}
-            </span>
-            <span className="button-label-short">
-              {isRunning ? "Pause" : demoStarted ? "Resume" : "Play demo"}
-            </span>
-          </button>
         </div>
       </header>
 
@@ -844,6 +831,31 @@ export function GateholdDashboard() {
             </span>
             <h2>{scene.title}</h2>
             <p>{scene.summary}</p>
+            <div className="decision-action-row">
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={toggleDemo}
+                aria-pressed={isRunning}
+              >
+                {isRunning ? (
+                  <Pause aria-hidden="true" size={16} />
+                ) : (
+                  <Play aria-hidden="true" size={16} fill="currentColor" />
+                )}
+                <span className="button-label-full">
+                  {isRunning
+                    ? "Pause demo"
+                    : demoStarted
+                      ? "Resume demo"
+                      : "Play 4-step demo"}
+                </span>
+                <span className="button-label-short">
+                  {isRunning ? "Pause" : demoStarted ? "Resume" : "Play demo"}
+                </span>
+              </button>
+              <span>Bounded replay · no repository access</span>
+            </div>
           </div>
           <div className="decision-contract" aria-label="Gatehold two-key rule">
             <DecisionKey
@@ -1071,14 +1083,7 @@ export function GateholdDashboard() {
             unrelated processes
           </p>
         </div>
-        <nav className="studio-credit" aria-label="Studio and Build Week collection">
-          <span>
-            Built by{" "}
-            <a href="https://ev1labs.com/" target="_blank" rel="noreferrer">
-              EV1 Labs
-            </a>
-          </span>
-          <span aria-hidden="true">·</span>
+        <nav className="studio-credit" aria-label="Build Week collection">
           <a
             href="https://ev1labs.com/labs/build-week-2026/"
             target="_blank"

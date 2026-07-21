@@ -24,3 +24,16 @@ Avoid: visual clutter, neon overload, gaming aesthetic, stock 3D render, illegib
 The generated text and clearance-path semantics were visually inspected after
 resizing. The committed file's PNG signature and dimensions are also enforced
 by `tests/web/rendered-html.test.mjs`.
+
+## Operational surface boundary
+
+The cinematic Open Graph artwork is promotional media, not the dashboard
+layout. The live product surface deliberately avoids a radar backdrop,
+ambient grid, HUD decoration, and repeated studio watermarks. Its first
+viewport is the working clearance system itself: current verdict, two
+authoritative keys, one primary replay control, and the bounded replay/live
+source boundary.
+
+Gatehold remains the dominant identity. The header carries one small
+`AN EV1 LABS BUILD` publisher link using the canonical EV1 mark, while the
+footer keeps one plain Build Week collection link.
