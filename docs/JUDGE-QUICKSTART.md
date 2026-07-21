@@ -4,7 +4,8 @@
 
 1. Open <https://gatehold-buildweek.e-vigelis.chatgpt.site>.
 2. Confirm the persistent mode label says **REPLAY**.
-3. Start the bounded scenario.
+3. Select **Play 4-step demo**. Each scene remains visible for ten seconds;
+   use **Pause** and **Resume** whenever more reading time is useful.
 4. Observe one agent receive workstream clearance and a TTL-bound lease.
 5. Observe a second agent receive a clear overlap hold before editing.
 6. Observe a heavy task wait for deterministic host-capacity/FIFO clearance.
@@ -261,6 +262,10 @@ not report clean success. Any still-unresolved state remains quarantined with
 its conflicts/allocations authoritative; reconciliation may subsequently
 complete it. Inspect sanitized status and the bounded runtime-cleanup audit
 described in [Testing](TESTING.md); unrelated processes were not signaled.
+
+The standalone `gatehold release` command uses the same boundary: exit `0`
+requires `state: released`; `state: active` exits `72` while cleanup authority
+is still retained.
 
 For deeper verification, see [Testing](TESTING.md),
 [Architecture](ARCHITECTURE.md), and [Threat Model](THREAT-MODEL.md).

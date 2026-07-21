@@ -50,6 +50,11 @@ test("server-renders the Gatehold clearance deck", async () => {
   assert.match(normalized, /Workstream key/);
   assert.match(normalized, /Capacity key/);
   assert.match(normalized, /Play 4-step demo/);
+  assert.match(normalized, /Inspect repo evidence/);
+  assert.match(
+    normalized,
+    /github\.com\/pakales\/gatehold#evidence-at-a-glance/,
+  );
   assert.match(
     normalized,
     /Two keys to start\. Verified cleanup to release\./,
@@ -135,6 +140,10 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
   assert.match(dashboard, /request\.semantic_hold/);
   assert.match(dashboard, /lease\.released/);
   assert.match(dashboard, /addEventListener\(eventKind/);
+  assert.match(dashboard, /const DEMO_STEP_MS = 10_000;/);
+  assert.match(dashboard, /aria-pressed=\{isRunning\}/);
+  assert.match(dashboard, /Pause demo/);
+  assert.match(dashboard, /Resume demo/);
   assert.match(dashboard, /10_000/);
   assert.doesNotMatch(dashboard, /events\.onerror/);
   assert.doesNotMatch(
@@ -180,7 +189,13 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
   assert.doesNotMatch(dashboard, /Clearance radar|radar-stage|HOST CORE/);
   const header = dashboard.match(/<header[\s\S]*?<\/header>/)?.[0] ?? "";
   assert.match(header, /button-primary/);
-  assert.doesNotMatch(header, /connectLocal|button-quiet/);
+  assert.match(header, /button-quiet/);
+  assert.match(header, /Inspect repo evidence/);
+  assert.doesNotMatch(header, /connectLocal/);
+  assert.match(
+    replayFixture,
+    /Exact workstream and scope checks see no match\.[\s\S]*GPT-5\.6 detects the semantic overlap and adds a HOLD; it can never grant clearance\./,
+  );
   assert.match(
     replayFixture,
     /Gatehold owns the exact synthetic sim-02 boot; any prebooted human simulator remains untouched\./,

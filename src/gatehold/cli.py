@@ -27,6 +27,7 @@ from .models import (
     ClaimOutcome,
     ClaimRequest,
     ClearanceDecision,
+    LeaseState,
     ResourceRequest,
     WorkloadClass,
 )
@@ -234,7 +235,13 @@ def _dispatch(arguments: argparse.Namespace) -> int:
             heartbeat_token=token,
         )
         print(outcome.model_dump_json(indent=2))
-        return 0
+        if outcome.state is LeaseState.RELEASED:
+            return 0
+        print(
+            "gatehold: release requested; cleanup remains pending or quarantined",
+            file=sys.stderr,
+        )
+        return CLEANUP_QUARANTINED_EXIT
     if command == "run":
         return _run_managed(config, arguments)
     if command == "demo":
