@@ -22,7 +22,7 @@ Developer Tools
 <https://github.com/pakales/gatehold>
 
 **Public YouTube demo URL**
-<https://youtu.be/nMsqkk9oclQ>
+<https://youtu.be/ABVdW7GwnN8>
 
 **Codex `/feedback` session ID**
 `019f7221-2421-78e3-b12e-f6082da1ed87`

@@ -183,7 +183,7 @@ Public repository:
 https://github.com/pakales/gatehold
 
 Replacement public YouTube video:
-https://youtu.be/nMsqkk9oclQ
+https://youtu.be/ABVdW7GwnN8
 PUBLIC — verified through anonymous YouTube metadata and signed-out browser
 playback. Never substitute the superseded QBdzI0hqTQY or gS-LWm62Tr0 renders.
 
