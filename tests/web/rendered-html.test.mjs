@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -71,15 +72,12 @@ test("server-renders the Gatehold clearance deck", async () => {
   );
   assert.match(normalized, /Local mode/);
   assert.match(normalized, /gatehold-og\.png/);
-  assert.match(
-    normalized,
-    /<a href="https:\/\/ev1labs\.com\/"[^>]*>EV1 Labs<\/a>/,
-  );
+  assert.match(normalized, /AN EV1 LABS BUILD/);
   assert.match(
     normalized,
     /<a href="https:\/\/ev1labs\.com\/labs\/build-week-2026\/"[^>]*>Build Week 2026 collection<\/a>/,
   );
-  assert.match(normalized, /Built by/);
+  assert.doesNotMatch(normalized, /Built by/);
   assert.doesNotMatch(
     normalized,
     /Your site is taking shape|Building your site/,
@@ -88,13 +86,20 @@ test("server-renders the Gatehold clearance deck", async () => {
 });
 
 test("ships a correctly sized Open Graph image", async () => {
-  const image = await readFile(new URL("public/gatehold-og.png", root));
+  const [image, publisherMark] = await Promise.all([
+    readFile(new URL("public/gatehold-og.png", root)),
+    readFile(new URL("public/ev1-labs-mark.svg", root)),
+  ]);
   assert.deepEqual(
     image.subarray(0, 8),
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
   );
   assert.equal(image.readUInt32BE(16), 1200);
   assert.equal(image.readUInt32BE(20), 630);
+  assert.equal(
+    createHash("sha256").update(publisherMark).digest("hex"),
+    "d1074b27463fb95e6ccfe07e1e7cba65528a08fe6e1af79919427bdd81b41032",
+  );
 });
 
 test("keeps local mode read-only, loopback-only, and secret-free", async () => {
@@ -196,10 +201,16 @@ test("keeps local mode read-only, loopback-only, and secret-free", async () => {
   assert.match(css, /\.intro\s*\{[\s\S]*?order:\s*3;/);
   assert.doesNotMatch(css, /letter-spacing:\s*-/);
   assert.doesNotMatch(dashboard, /Clearance radar|radar-stage|HOST CORE/);
+  assert.doesNotMatch(dashboard, /ambient-grid/);
+  assert.doesNotMatch(css, /radar-stage|radar-sweep|ambient-grid|host-core/);
+  assert.match(css, /url\("\/ev1-labs-mark\.svg"\)/);
+  assert.equal((dashboard.match(/className="button button-primary"/g) ?? []).length, 1);
   const header = dashboard.match(/<header[\s\S]*?<\/header>/)?.[0] ?? "";
-  assert.match(header, /button-primary/);
   assert.match(header, /button-quiet/);
   assert.match(header, /Inspect repo evidence/);
+  assert.match(header, /publisher-signature/);
+  assert.match(header, /AN EV1 LABS BUILD/);
+  assert.doesNotMatch(header, /button-primary/);
   assert.doesNotMatch(header, /connectLocal/);
   assert.match(
     replayFixture,
