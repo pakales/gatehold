@@ -190,11 +190,11 @@ playback. Never substitute the superseded QBdzI0hqTQY or gS-LWm62Tr0 renders.
 Codex /feedback session:
 019f7221-2421-78e3-b12e-f6082da1ed87
 
-Final validated release package:
-88bafa9e595e0f6d3e98c24fce235bafd85341b1
+Final hardening source:
+8fc8c68bafb5abb170530e728d47f5a7e78a690e
 
-Final GitHub Actions run:
-https://github.com/pakales/gatehold/actions/runs/29755587411 — PASS
+Matching public pull-request gate:
+https://github.com/pakales/gatehold/actions/runs/29812461364 — PASS
 
 Final anonymous checks:
 PASS for the exact Sites candidate, public repository, replacement YouTube

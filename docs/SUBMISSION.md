@@ -442,10 +442,18 @@ The public-link update is
 — passed the complete release contract and dependency audit on the exact
 executable source revision.
 
-**Final validated release package:**
+**Submitted title-safe baseline:**
 [`88bafa9e595e0f6d3e98c24fce235bafd85341b1`](https://github.com/pakales/gatehold/commit/88bafa9e595e0f6d3e98c24fce235bafd85341b1)
 
 **Matching final public CI run:**
 [Gatehold CI #29755587411](https://github.com/pakales/gatehold/actions/runs/29755587411)
 — passed after the title-safe media correction and release-evidence update were
 merged to `main`.
+
+**Final hardening source:**
+[`8fc8c68bafb5abb170530e728d47f5a7e78a690e`](https://github.com/pakales/gatehold/commit/8fc8c68bafb5abb170530e728d47f5a7e78a690e)
+
+**Matching public pull-request gate:**
+[Gatehold CI #29812461364](https://github.com/pakales/gatehold/actions/runs/29812461364)
+— passed on the exact source revision after truthful release-state output,
+judge-controlled replay, and dependency hardening were added.

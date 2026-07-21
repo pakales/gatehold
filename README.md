@@ -446,11 +446,16 @@ The final validated executable source is
 which passed the exact public
 [Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29749328675),
 including the release contract and dependency audit.
-The final title-safe release package is
+The submitted title-safe baseline is
 [`88bafa9e595e0f6d3e98c24fce235bafd85341b1`](https://github.com/pakales/gatehold/commit/88bafa9e595e0f6d3e98c24fce235bafd85341b1);
 its matching
 [Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29755587411)
-also passed on `main`.
+passed on `main`. The final hardening source is
+[`8fc8c68bafb5abb170530e728d47f5a7e78a690e`](https://github.com/pakales/gatehold/commit/8fc8c68bafb5abb170530e728d47f5a7e78a690e),
+validated by the exact public
+[Gatehold pull-request gate](https://github.com/pakales/gatehold/actions/runs/29812461364).
+It makes release output reflect verified cleanup, adds a judge-controlled replay,
+and updates the dependency audit baseline.
 
 ## Repository map
 
