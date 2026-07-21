@@ -617,13 +617,24 @@ class GateholdService:
         heartbeat_token: str,
     ) -> ReleaseOutcome:
         try:
-            return self._release(
+            outcome = self._release(
                 lease_id=lease_id,
                 owner_id=owner_id,
                 heartbeat_token=heartbeat_token,
             )
         finally:
             self._drain_cleanup(reason="explicit_release")
+        with self.store.reader() as connection:
+            lease = self.store.get_lease(connection, lease_id)
+        if lease is None:
+            raise UnknownLeaseError("unknown lease")
+        released_at = _as_utc(self._now()) if lease.state is LeaseState.RELEASED else None
+        return outcome.model_copy(
+            update={
+                "state": lease.state,
+                "released_at": released_at,
+            }
+        )
 
     def _release(
         self,
@@ -670,7 +681,7 @@ class GateholdService:
             self.store.persist_receipt(connection, receipt)
             return ReleaseOutcome(
                 lease_id=lease.lease_id,
-                released_at=now,
+                state=LeaseState.ACTIVE,
                 receipt=receipt,
             )
 

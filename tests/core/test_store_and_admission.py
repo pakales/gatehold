@@ -23,6 +23,7 @@ from gatehold.models import (
     ClaimRequest,
     ClearanceDecision,
     ConflictKind,
+    LeaseState,
     ReasonCode,
     RequestState,
     SemanticAssessment,
@@ -482,6 +483,8 @@ def test_release_requires_credentials_and_is_not_repeatable(
         heartbeat_token=claimed.lease.heartbeat_token,
     )
     assert released.lease_id == claimed.lease.lease_id
+    assert released.state is LeaseState.RELEASED
+    assert released.released_at is not None
     assert released.receipt.expires_at is None
     assert service.snapshot().active_leases == ()
     with pytest.raises(LeaseNotActiveError, match="released"):

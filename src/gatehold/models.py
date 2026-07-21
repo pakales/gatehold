@@ -286,8 +286,17 @@ class HeartbeatOutcome(DomainModel):
 
 class ReleaseOutcome(DomainModel):
     lease_id: str
-    released_at: datetime
+    state: LeaseState
+    released_at: datetime | None = None
     receipt: Receipt
+
+    @model_validator(mode="after")
+    def validate_release_state(self) -> ReleaseOutcome:
+        if self.state is LeaseState.RELEASED and self.released_at is None:
+            raise ValueError("released outcome requires released_at")
+        if self.state is not LeaseState.RELEASED and self.released_at is not None:
+            raise ValueError("unreleased outcome cannot expose released_at")
+        return self
 
 
 class CapacitySnapshot(DomainModel):

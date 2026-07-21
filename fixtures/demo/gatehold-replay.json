@@ -87,7 +87,7 @@
       "step": "B",
       "eyebrow": "Semantic hold",
       "title": "Different words. Same workstream.",
-      "summary": "Agent 18 asks to harden session renewal. GPT-5.6 raises a conservative review hold; deterministic policy remains authoritative.",
+      "summary": "Exact workstream and scope checks see no match. In this bounded replay, GPT-5.6 detects the semantic overlap and adds a HOLD; it can never grant clearance.",
       "host": {
         "cpuPercent": 44,
         "ramPercent": 56,
@@ -122,7 +122,7 @@
             "workstream": "hold",
             "capacity": "pass"
           },
-          "reason": "GPT-5.6 adds a conservative semantic review hold; it cannot grant clearance or override deterministic policy."
+          "reason": "Exact scope differs from auth/session, but GPT-5.6 detects the semantic overlap and adds a conservative hold; it cannot grant clearance."
         },
         {
           "id": "lane-12",
@@ -144,22 +144,22 @@
           "id": "b-1",
           "time": "09:42:11",
           "tone": "neutral",
-          "label": "Agent 18 requested",
-          "detail": "Harden session renewal"
+          "label": "Exact checks found no match",
+          "detail": "identity/session ≠ auth/session"
         },
         {
           "id": "b-2",
           "time": "09:42:12",
           "tone": "amber",
-          "label": "Semantic overlap raised",
-          "detail": "GPT-5.6 · bounded classifier"
+          "label": "GPT-5.6 adds semantic HOLD",
+          "detail": "Bounded adviser · cannot grant"
         },
         {
           "id": "b-3",
           "time": "09:42:12",
           "tone": "coral",
-          "label": "Workstream hold",
-          "detail": "Existing lease remains authoritative"
+          "label": "Deterministic authority retained",
+          "detail": "No lease granted · owner unchanged"
         }
       ]
     },

@@ -23,7 +23,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const DAEMON_ORIGIN = "http://127.0.0.1:47820";
-const DEMO_STEP_MS = 2800;
+const DEMO_STEP_MS = 10_000;
 
 type KeyState = "pass" | "hold" | "idle";
 type Tone = "mint" | "amber" | "coral" | "neutral";
@@ -180,7 +180,7 @@ const demoScenes: readonly DemoScene[] = [
     shortLabel: "Semantic hold",
     title: "Different words. Same workstream.",
     summary:
-      "Agent 18 asks to “harden session renewal.” GPT-5.6 raises a conservative review hold; deterministic policy remains authoritative.",
+      "Exact workstream and scope checks see no match. In this bounded replay, GPT-5.6 detects the semantic overlap and adds a HOLD; it can never grant clearance.",
     verdict: "HOLD",
     verdictTone: "coral",
     focusLaneIndex: 1,
@@ -215,7 +215,7 @@ const demoScenes: readonly DemoScene[] = [
         weight: "light",
         workstream: { state: "hold", label: "Overlap" },
         capacity: { state: "pass", label: "Headroom" },
-        note: "Meaning overlaps auth/session",
+        note: "Exact scope differs; meaning overlaps auth/session",
       },
       {
         id: "lane-12",
@@ -235,22 +235,22 @@ const demoScenes: readonly DemoScene[] = [
         id: "b-1",
         time: "09:42:11",
         tone: "neutral",
-        title: "Agent 18 requested",
-        detail: "“Harden session renewal”",
+        title: "Exact checks found no match",
+        detail: "identity/session ≠ auth/session",
       },
       {
         id: "b-2",
         time: "09:42:12",
         tone: "amber",
-        title: "Semantic overlap raised",
-        detail: "GPT-5.6 · bounded classifier",
+        title: "GPT-5.6 adds semantic HOLD",
+        detail: "Bounded adviser · cannot grant",
       },
       {
         id: "b-3",
         time: "09:42:12",
         tone: "coral",
-        title: "Workstream hold",
-        detail: "Existing lease remains authoritative",
+        title: "Deterministic authority retained",
+        detail: "No lease granted · owner unchanged",
       },
     ],
   },
@@ -577,6 +577,7 @@ function Metric({
 export function GateholdDashboard() {
   const [sceneIndex, setSceneIndex] = useState(1);
   const [isRunning, setIsRunning] = useState(false);
+  const [demoStarted, setDemoStarted] = useState(false);
   const [liveState, setLiveState] = useState<LiveState>("replay");
   const [localSnapshot, setLocalSnapshot] =
     useState<LocalDaemonSnapshot | null>(null);
@@ -667,17 +668,17 @@ export function GateholdDashboard() {
 
   useEffect(() => {
     if (!isRunning) return;
-    let nextScene = 0;
-    const interval = window.setInterval(() => {
-      nextScene += 1;
-      setSceneIndex(nextScene);
-      if (nextScene === demoScenes.length - 1) {
-        window.clearInterval(interval);
+    const isFinalScene = sceneIndex >= demoScenes.length - 1;
+    const timeout = window.setTimeout(() => {
+      if (isFinalScene) {
         setIsRunning(false);
+        setDemoStarted(false);
+        return;
       }
+      setSceneIndex((current) => current + 1);
     }, DEMO_STEP_MS);
-    return () => window.clearInterval(interval);
-  }, [isRunning]);
+    return () => window.clearTimeout(timeout);
+  }, [isRunning, sceneIndex]);
 
   useEffect(() => {
     if (liveState !== "live") {
@@ -716,13 +717,21 @@ export function GateholdDashboard() {
     };
   }, [liveState, refreshLocalSnapshot]);
 
-  function runDemo() {
-    setSceneIndex(0);
+  function toggleDemo() {
+    if (isRunning) {
+      setIsRunning(false);
+      return;
+    }
+    if (!demoStarted || sceneIndex >= demoScenes.length - 1) {
+      setSceneIndex(0);
+    }
+    setDemoStarted(true);
     setIsRunning(true);
   }
 
   function selectScene(index: number) {
     setIsRunning(false);
+    setDemoStarted(false);
     setSceneIndex(index);
   }
 
@@ -749,22 +758,36 @@ export function GateholdDashboard() {
           </span>
         </div>
         <div className="header-actions">
+          <a
+            className="button button-quiet"
+            href="https://github.com/pakales/gatehold#evidence-at-a-glance"
+            target="_blank"
+            rel="noreferrer"
+            title="Inspect committed repository evidence, not live telemetry"
+          >
+            <ShieldCheck aria-hidden="true" size={15} />
+            <span>Inspect repo evidence</span>
+          </a>
           <button
             className="button button-primary"
             type="button"
-            onClick={runDemo}
-            disabled={isRunning}
+            onClick={toggleDemo}
+            aria-pressed={isRunning}
           >
             {isRunning ? (
-              <Activity aria-hidden="true" size={16} />
+              <Pause aria-hidden="true" size={16} />
             ) : (
               <Play aria-hidden="true" size={16} fill="currentColor" />
             )}
             <span className="button-label-full">
-              {isRunning ? "Playing clearance…" : "Play 4-step demo"}
+              {isRunning
+                ? "Pause demo"
+                : demoStarted
+                  ? "Resume demo"
+                  : "Play 4-step demo"}
             </span>
             <span className="button-label-short">
-              {isRunning ? "Playing…" : "Play demo"}
+              {isRunning ? "Pause" : demoStarted ? "Resume" : "Play demo"}
             </span>
           </button>
         </div>

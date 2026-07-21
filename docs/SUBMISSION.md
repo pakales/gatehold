@@ -1,8 +1,8 @@
 # Gatehold — Devpost Submission Copy
 
-This file is the English source of truth for the OpenAI Build Week entry.
-Fields explicitly marked pending must be replaced and signed-out verified at
-the user-approved external-release boundary.
+This file is the English source of truth for the submitted OpenAI Build Week
+entry. Public links and evidence must remain synchronized with the live Devpost
+page and be verified signed out after every approved edit.
 
 ## Submission fields
 
@@ -41,20 +41,27 @@ and runtime surfaces are clean. Deterministic local policy is the only
 clearance authority. GPT-5.6 can detect a semantic overlap and add a hold, but
 it can never grant clearance or override a local conflict.
 
-## Fast judge path
+## Judge in 90 seconds
 
 Open <https://gatehold-buildweek.e-vigelis.chatgpt.site> with no account, key,
 or local installation. In approximately 90 seconds, the bounded replay shows:
 
 1. one agent receiving a TTL-bound workstream lease;
-2. a differently worded overlapping claim being held before it edits;
+2. exact rules treating `auth/session` and `identity/session` as different,
+   then GPT-5.6 detecting their semantic overlap and adding a conservative
+   hold before the second agent edits;
 3. a heavy task waiting for deterministic FIFO host capacity;
 4. exclusive port, browser-profile, and exact-simulator ownership; and
 5. verified owned cleanup completing before the next task becomes eligible.
 
+Worktrees isolate files. Gatehold governs overlapping product outcomes and
+shared machine lanes. GPT-5.6 can only add the hold in step 2; deterministic
+local policy remains the only clearance authority.
+
 The experience is persistently labeled **REPLAY** because a public site cannot
 truthfully inspect a judge's workstation. A five-minute source path exercises
-the real local daemon and CLI.
+the real local daemon and CLI. The exact public source revision is covered by
+the linked green GitHub Actions release gate in the Build Week evidence block.
 
 ## Inspiration
 
@@ -154,7 +161,7 @@ Gatehold into a remote surveillance service or expanding GPT-5.6's authority.
   and live-local dashboard.
 - A reusable Codex skill that makes claim-before-edit, governed heavy work,
   heartbeat, and release part of the agent workflow.
-- A release gate that collects 246 Python contract cases and three Node web
+- A release gate that collects 247 Python contract cases and three Node web
   contract tests, then runs Ruff, Pyright, TypeScript, ESLint, privacy/link
   checks, and a production build.
 
@@ -231,7 +238,7 @@ shutdown.
 - A GPT-5.6 integration that can only make admission more conservative.
 - A public no-secret replay plus a separate live-local control desk.
 - A Codex skill that operationalizes the safety contract for real coding work.
-- A current inventory of 246 Python contract cases plus three Node web contract
+- A current inventory of 247 Python contract cases plus three Node web contract
   tests, strict Python/TypeScript checks, privacy documentation, and a
   reproducible judge route.
 
@@ -434,3 +441,19 @@ The public-link update is
 [Gatehold CI #29749328675](https://github.com/pakales/gatehold/actions/runs/29749328675)
 — passed the complete release contract and dependency audit on the exact
 executable source revision.
+
+**Submitted title-safe baseline:**
+[`88bafa9e595e0f6d3e98c24fce235bafd85341b1`](https://github.com/pakales/gatehold/commit/88bafa9e595e0f6d3e98c24fce235bafd85341b1)
+
+**Matching final public CI run:**
+[Gatehold CI #29755587411](https://github.com/pakales/gatehold/actions/runs/29755587411)
+— passed after the title-safe media correction and release-evidence update were
+merged to `main`.
+
+**Final hardening source:**
+[`8fc8c68bafb5abb170530e728d47f5a7e78a690e`](https://github.com/pakales/gatehold/commit/8fc8c68bafb5abb170530e728d47f5a7e78a690e)
+
+**Matching public pull-request gate:**
+[Gatehold CI #29812461364](https://github.com/pakales/gatehold/actions/runs/29812461364)
+— passed on the exact source revision after truthful release-state output,
+judge-controlled replay, and dependency hardening were added.

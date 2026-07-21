@@ -168,6 +168,10 @@ If a child exits successfully but immediate cleanup cannot be verified,
 success. A non-zero child result remains the child result; cleanup status is
 still recorded and reconciled.
 
+The standalone `gatehold release` command also returns `0` only with
+`state: released`. While cleanup remains pending or quarantined, it reports
+`state: active`, returns `72`, and retains workstream/resource authority.
+
 ## Model authority contract
 
 GPT-5.6 is useful where exact identifiers and path matching are insufficient.

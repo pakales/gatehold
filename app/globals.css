@@ -1037,7 +1037,7 @@ a:focus-visible {
   height: 1px;
   background: rgb(var(--scene-rgb) / 0.75);
   transform-origin: left;
-  animation: scene-progress 2.8s linear both;
+  animation: scene-progress 10s linear both;
   content: "";
 }
 

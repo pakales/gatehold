@@ -4,6 +4,22 @@
 
 [![Gatehold CI](https://github.com/pakales/gatehold/actions/workflows/ci.yml/badge.svg)](https://github.com/pakales/gatehold/actions/workflows/ci.yml)
 
+## Judge in 90 seconds
+
+**Build Week status:** [Submitted on Devpost](https://devpost.com/software/gatehold).
+
+1. Open the [public replay](https://gatehold-buildweek.e-vigelis.chatgpt.site);
+   no account, key, install, or local access is required.
+2. Select **Play 4-step demo**. Pause or resume whenever more reading time is
+   useful.
+3. Watch **Clean admit → Semantic hold → Capacity hold → Clean finish**.
+4. Keep the persistent **REPLAY** label in view.
+
+What to notice: deterministic policy alone grants clearance; GPT-5.6 can only
+add a conservative semantic hold; an owned lane is not reusable until verified
+cleanup completes. For exact local commands, see
+[Judge Quickstart](docs/JUDGE-QUICKSTART.md).
+
 Gatehold stops two cooperative AI coding agents from silently taking the same
 workstream and keeps heavy builds, tests, browser sessions, and simulator lanes
 from overwhelming one developer workstation.
@@ -64,7 +80,7 @@ that a process belongs to it.
 | Judge question | Inspectable evidence |
 | --- | --- |
 | Is this more than a UI concept? | A Python daemon, transactional SQLite admission engine, CLI, process supervisor, React control desk, and reusable Codex skill are all in this repository. |
-| Is the core behavior exercised? | The current release gate collects 246 Python contract cases and three Node web contract tests, then runs strict Python/TypeScript checks and a production build. |
+| Is the core behavior exercised? | The current release gate collects 247 Python contract cases and three Node web contract tests, then runs strict Python/TypeScript checks and a production build. |
 | Does cleanup work on a real machine? | A recorded disposable macOS Simulator smoke reached `boot_intent -> owned -> cleaned`, confirmed shutdown, and finished with zero allocations and zero booted simulators. |
 | Can a judge see the product quickly? | The public, no-account [90-second replay](https://gatehold-buildweek.e-vigelis.chatgpt.site) demonstrates admission, semantic hold, FIFO capacity waiting, runtime ownership, and verified clean finish. |
 | Can GPT-5.6 take control? | No. Its strict output can only add a semantic hold; deterministic conflict, capacity, ownership, and release decisions stay outside the model schema. |
@@ -73,11 +89,7 @@ The exact commands, expected results, platform limits, and recorded simulator
 evidence are in [Testing](docs/TESTING.md) and
 [Judge Quickstart](docs/JUDGE-QUICKSTART.md).
 
-## Judge quickstart
-
-The fastest no-secret path is the bounded public replay described in
-[Judge Quickstart](docs/JUDGE-QUICKSTART.md). It is intentionally labeled
-**REPLAY** and does not claim to show the judge's machine.
+## Run the real local product
 
 To run the real local product from this repository:
 
@@ -227,6 +239,11 @@ positively verified. Ambiguous ownership or partial cleanup stays quarantined
 and continues to block conflicting work; unrelated processes are not signaled.
 A successful child whose cleanup cannot be confirmed returns exit code `72`.
 
+The standalone `gatehold release` command follows the same truth boundary: its
+JSON reports `state: released` and exits `0` only after cleanup finalizes. If
+authority remains active while cleanup is pending or quarantined, it reports
+`state: active` and exits `72`.
+
 When `--simulator` allocates a configured exact UDID on macOS, Gatehold first
 inspects that device. A simulator that is already booted is recorded as
 external and is never touched. Otherwise Gatehold persists `boot_intent`
@@ -298,6 +315,12 @@ reaches a verified clean finish.
 worded work claims may still overlap. Its output can only add a hold. It has no
 authority to admit work, remove a deterministic conflict, bypass FIFO capacity,
 execute a command, or mutate a lease.
+
+**Counterfactual:** without GPT-5.6, deterministic workstream, resource,
+capacity, and cleanup rules still work, but a differently worded overlap that
+passes exact matching loses the additional semantic hold. Scene B is the
+concrete behavior GPT-5.6 adds: ambiguity can be stopped for review, but never
+turned into permission.
 
 The key product decisions remained explicit human/engineering choices:
 deterministic clearance is authoritative, the daemon is loopback-only,
@@ -408,6 +431,12 @@ contains an earlier, separate ProofLatch workstream before the explicit pivot
 to Gatehold; the shared task ID records thread continuity, while the products
 share no source code and the dated Gatehold commits isolate this implementation.
 
+The separation is functional: Gatehold decides **before controlled work**
+whether an agent may start, own runtime resources, and release its lane after
+verified cleanup. ProofLatch evaluates **after checks** whether a bounded
+release-evidence packet is `BLOCKED` or `READY`. Gatehold emits leases and
+cleanup state; ProofLatch emits a release decision and bounded repair brief.
+
 The last published, fully validated baseline before the final hardening pass is
 [`b530fa173fa526bda0574c218fa700f6902bb00d`](https://github.com/pakales/gatehold/commit/b530fa173fa526bda0574c218fa700f6902bb00d);
 it passed the complete public
@@ -417,6 +446,16 @@ The final validated executable source is
 which passed the exact public
 [Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29749328675),
 including the release contract and dependency audit.
+The submitted title-safe baseline is
+[`88bafa9e595e0f6d3e98c24fce235bafd85341b1`](https://github.com/pakales/gatehold/commit/88bafa9e595e0f6d3e98c24fce235bafd85341b1);
+its matching
+[Gatehold CI gate](https://github.com/pakales/gatehold/actions/runs/29755587411)
+passed on `main`. The final hardening source is
+[`8fc8c68bafb5abb170530e728d47f5a7e78a690e`](https://github.com/pakales/gatehold/commit/8fc8c68bafb5abb170530e728d47f5a7e78a690e),
+validated by the exact public
+[Gatehold pull-request gate](https://github.com/pakales/gatehold/actions/runs/29812461364).
+It makes release output reflect verified cleanup, adds a judge-controlled replay,
+and updates the dependency audit baseline.
 
 ## Repository map
 

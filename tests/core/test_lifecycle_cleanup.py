@@ -21,6 +21,7 @@ from gatehold.lifecycle import (
 from gatehold.models import (
     ClaimRequest,
     ClearanceDecision,
+    LeaseState,
     ResourceRequest,
     WorkloadClass,
 )
@@ -227,11 +228,13 @@ def test_external_port_listener_is_not_touched_and_blocks_final_release(
     external_listener.bind(("127.0.0.1", port))
     external_listener.listen(1)
     try:
-        service.release(
+        release = service.release(
             lease_id=claimed.lease.lease_id,
             owner_id=request.owner_id,
             heartbeat_token=claimed.lease.heartbeat_token,
         )
+        assert release.state is LeaseState.ACTIVE
+        assert release.released_at is None
         assert external_listener.fileno() >= 0
         assert len(service.snapshot().active_leases) == 1
         with service.store.reader() as connection:

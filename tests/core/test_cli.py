@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import socket
 import stat
 import subprocess
 import sys
@@ -929,4 +930,67 @@ def test_release_accepts_generated_token_without_echoing_it(
     assert exit_code == 0
     assert token not in captured.out
     assert token not in captured.err
-    assert json.loads(captured.out)["lease_id"] == claimed.lease.lease_id
+    payload = json.loads(captured.out)
+    assert payload["lease_id"] == claimed.lease.lease_id
+    assert payload["state"] == "released"
+    assert payload["released_at"] is not None
+
+
+def test_release_returns_quarantine_exit_when_cleanup_is_not_verified(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    reservation = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    reservation.bind(("127.0.0.1", 0))
+    port = int(reservation.getsockname()[1])
+    reservation.close()
+    state_dir = tmp_path / "state"
+    config = GateholdConfig(state_dir=state_dir, port_start=port, port_end=port)
+    service = GateholdService(config, host_probe=StaticHostProbe())
+    request = ClaimRequest(
+        owner_id="owner",
+        workstream="release-quarantine",
+        scopes=("src/release-quarantine",),
+        workload=WorkloadClass.LIGHT,
+        resources=ResourceRequest(port=True),
+    )
+    claimed = service.claim(request)
+    assert claimed.lease is not None
+    token = claimed.lease.heartbeat_token
+
+    external_listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    external_listener.bind(("127.0.0.1", port))
+    external_listener.listen(1)
+    try:
+        exit_code = main(
+            [
+                "--state-dir",
+                str(state_dir),
+                "release",
+                claimed.lease.lease_id,
+                "--owner",
+                request.owner_id,
+                "--token",
+                token,
+            ]
+        )
+        captured = capsys.readouterr()
+
+        assert exit_code == CLEANUP_QUARANTINED_EXIT
+        assert token not in captured.out
+        assert token not in captured.err
+        payload = json.loads(captured.out)
+        assert payload["lease_id"] == claimed.lease.lease_id
+        assert payload["state"] == "active"
+        assert payload["released_at"] is None
+        assert "cleanup remains pending or quarantined" in captured.err
+        assert len(service.snapshot().active_leases) == 1
+    finally:
+        external_listener.close()
+
+    cleanup = service.cleanup_runtime(
+        lease_id=claimed.lease.lease_id,
+        reason="test_listener_closed",
+    )
+    assert cleanup.complete is True
+    assert cleanup.resources_finalized is True

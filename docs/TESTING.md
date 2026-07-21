@@ -82,6 +82,8 @@ The deterministic test suite must pass with `OPENAI_API_KEY` unset.
 - partial or ambiguous cleanup becomes `QUARANTINED` for idempotent
   reconciliation;
 - a successful child with unverified cleanup returns `72`;
+- standalone `gatehold release` reports `state: active` and returns `72` until
+  cleanup is positively finalized as `state: released`;
 - interrupted governed runs use the same owned cleanup path.
 
 ### Owned runtime boundary

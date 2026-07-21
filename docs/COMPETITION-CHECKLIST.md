@@ -33,14 +33,20 @@ The official rules and Devpost site override this checklist.
 - [x] Record the real Codex `/feedback` session ID.
 - [x] Link the dated competition-period commits.
 - [x] Record the final validated source revision and matching green CI run.
-- [ ] Confirm no pending-release marker remains in public or submitted copy.
+- [x] Confirm no pending-release marker remains in public or submitted copy.
 - [x] Confirm the exact final public demo opens signed out in a private browser
       window.
 - [x] Confirm public repository opens signed out and includes MIT `LICENSE`.
+- [x] Confirm `main` requires a strict `verify` check through a pull request,
+      protects admins, resolves review conversations, and disallows force-push
+      and deletion.
+- [x] Confirm GitHub Actions is allowlisted, SHA pinning is required, and
+      security alerts, Dependabot updates, secret scanning, and push protection
+      are active.
 - [x] Confirm the replacement YouTube video is **Public**, not Unlisted or
       Private.
 - [x] Confirm the replacement local render is under 3:00 and audio is clear.
-- [ ] Confirm the Devpost form is actually submitted, not only saved as draft.
+- [x] Confirm the Devpost form is actually submitted, not only saved as draft.
 
 ## Product readiness
 
@@ -129,14 +135,14 @@ The official rules and Devpost site override this checklist.
 - [x] Name: Gatehold.
 - [x] Tagline: “Local air-traffic control for coding agents.”
 - [x] Category: Developer Tools.
-- [ ] Paste and proofread `docs/SUBMISSION.md`.
-- [ ] Public URL, repo URL, replacement YouTube URL, and session ID match the
+- [x] Paste and proofread `docs/SUBMISSION.md`.
+- [x] Public URL, repo URL, replacement YouTube URL, and session ID match the
       final revision.
 - [x] Testing instructions require no paid account or secret.
 - [x] Pre-existing-work disclosure is included, not only in the repo.
 - [x] Distinction from ProofLatch is included and accurate.
 - [x] No claim says Gatehold is first, only, a sandbox, or a guarantee.
-- [ ] Representative/entrant details are correct.
+- [x] Representative/entrant details passed the submitted Devpost form.
 
 ## Multiple-submission separation
 
@@ -149,16 +155,15 @@ The official rules and Devpost site override this checklist.
 
 ## Final evidence block
 
-Replace every pending field immediately before submission:
-
 ```text
 Candidate state:
-Exact executable candidate committed and pushed; public CI is green. Release
-provenance update, merge, Sites deployment, YouTube publication, and Devpost
-submission remain in progress at the approved external-release boundary.
+Exact release package is merged to `main`; public CI is green. Production Sites
+v7 remains source-equivalent to the executable UI, the replacement YouTube
+video is Public, GitHub release protections are active, and the Devpost entry
+is submitted to OpenAI Build Week.
 
 Local release gate:
-PASS — 246 Python tests + 3 Node web tests, Ruff, Pyright, TypeScript, ESLint,
+PASS — 247 Python tests + 3 Node web tests, Ruff, Pyright, TypeScript, ESLint,
 privacy/link checks, production build, dependency audit, CLI lifecycle smoke,
 governed interruption cleanup, and bounded live GPT-5.6 smoke.
 
@@ -185,30 +190,28 @@ playback. Never substitute the superseded QBdzI0hqTQY or gS-LWm62Tr0 renders.
 Codex /feedback session:
 019f7221-2421-78e3-b12e-f6082da1ed87
 
-Final validated executable source:
-ba54c575ca510c2ec04bd372392c163fc10099b7
+Final hardening source:
+8fc8c68bafb5abb170530e728d47f5a7e78a690e
 
-Final GitHub Actions run:
-https://github.com/pakales/gatehold/actions/runs/29749328675 — PASS
+Matching public pull-request gate:
+https://github.com/pakales/gatehold/actions/runs/29812461364 — PASS
 
 Final anonymous checks:
-PASS for the exact Sites candidate, public repository and replacement YouTube
-playback. Devpost remains pending until the entry is submitted.
+PASS for the exact Sites candidate, public repository, replacement YouTube
+playback, and public Devpost project page.
 
 Devpost:
-PENDING — not submitted.
+SUBMITTED — https://devpost.com/software/gatehold
 
 Skipped:
 No local source, build, dependency, installer, daemon, model, UI, media, or
-privacy check was skipped. Only publication-dependent signed-out checks remain
-pending.
+privacy check was skipped for the recorded release package.
 
 Residual risk:
 Gatehold coordinates opt-in cooperative clients, not unmanaged processes.
 vinext still emits an upstream Node punycode deprecation warning while the
-build succeeds. The final media provenance merge, GitHub hardening, and Devpost
-submission remain external release actions in progress. The older public
-videos must not be used in the final Gatehold submission.
+build succeeds. The older public videos must not be used in the Gatehold
+submission.
 ```
 
 ## Stop boundaries
